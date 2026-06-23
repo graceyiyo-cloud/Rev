@@ -19,6 +19,10 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
+        /* 隱藏橫向捲軸以維持篩選列整潔 */
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
         /* 整體字體加大約 10% */
         html { font-size: 110%; }
         body { 
@@ -848,28 +852,16 @@
                             <input type="text" id="address" class="block w-full border-slate-200 rounded-xl p-3 border text-sm outline-none">
                         </div>
                     </div>
-                    <div class="grid grid-cols-3 gap-3 bg-slate-50 p-4 rounded-xl border border-slate-100">
-                        <div>
-                            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">冷氣台數</label>
-                            <input type="number" id="acCount" value="0" min="0" onfocus="this.select()" oninput="handleAcCountChange()" class="w-full rounded-lg p-2 border border-slate-200 text-sm font-bold">
-                        </div>
-                        <div>
-                            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">洗衣機</label>
-                            <input type="number" id="wmCount" value="0" min="0" onfocus="this.select()" class="w-full rounded-lg p-2 border border-slate-200 text-sm font-bold">
-                        </div>
-                        <div>
-                            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">水塔</label>
-                            <input type="number" id="wtCount" value="0" min="0" onfocus="this.select()" class="w-full rounded-lg p-2 border border-slate-200 text-sm font-bold">
-                        </div>
-                    </div>
 
-                    <div id="acBrandSection" class="hidden space-y-2 bg-emerald-50/30 p-4 rounded-xl border border-emerald-100">
+                    <!-- 本次修正：更靈活的營業品項輸入區塊 -->
+                    <div id="serviceItemSection" class="space-y-2 bg-emerald-50/30 p-4 rounded-xl border border-emerald-100">
                         <div class="flex justify-between items-center mb-1">
-                            <label class="block text-xs font-bold text-emerald-600 uppercase tracking-wider"><i data-lucide="snowflake" class="lucide mr-1"></i> 冷氣明細</label>
-                            <button type="button" onclick="addAcDetailRow()" class="text-[10px] bg-emerald-600 text-white px-2 py-1 rounded shadow-sm">+ 增加明細</button>
+                            <label class="block text-xs font-bold text-emerald-600 uppercase tracking-wider"><i data-lucide="layers" class="lucide mr-1"></i> 營業品項明細</label>
+                            <button type="button" onclick="addServiceItemRow()" class="text-[10px] bg-emerald-600 text-white px-2 py-1 rounded shadow-sm">+ 增加品項</button>
                         </div>
-                        <div id="acDetailsContainer" class="space-y-2"></div>
+                        <div id="serviceDetailsContainer" class="space-y-2"></div>
                     </div>
+                    <datalist id="categoryNamesList"></datalist>
 
                     <div class="space-y-2 bg-rose-50/30 p-4 rounded-xl border border-rose-100">
                         <div class="flex justify-between items-center mb-1">
@@ -914,10 +906,9 @@
                         <span>全</span><span>部</span><span>年</span><span>份</span><span>總</span><span>累</span><span>計</span>
                     </div>
                     <div class="flex-1">
-                        <div class="grid grid-cols-3 gap-2 text-center border-b border-white/10 pb-2 mb-2">
-                            <div><p class="text-[10px] text-white/65">冷氣</p><p class="text-xl font-bold" id="allAc">0</p></div>
-                            <div><p class="text-[10px] text-white/65">洗衣機</p><p class="text-xl font-bold" id="allWm">0</p></div>
-                            <div><p class="text-[10px] text-white/65">水塔</p><p class="text-xl font-bold" id="allWt">0</p></div>
+                        <!-- 本次修正：動態顯示所有品項統計 -->
+                        <div id="allStatsContainer" class="grid grid-cols-3 gap-2 text-center border-b border-white/10 pb-2 mb-2">
+                            <!-- 動態填入 -->
                         </div>
                         <div class="metric-box-grid">
                             <div class="metric-box metric-box-rev">
@@ -955,7 +946,7 @@
                         <div>
                             <div class="flex justify-between items-start">
                                 <h3 class="text-slate-500 text-[10px] font-bold uppercase tracking-widest" id="yearTitle">年度統計</h3>
-                                <div class="text-[10px] text-slate-400">年度數量: <span class="text-slate-700 font-bold" id="yCounts">冷0 / 洗0 / 水0</span></div>
+                                <div class="text-[10px] text-slate-400">年度數量: <span class="text-slate-700 font-bold" id="yCounts">無資料</span></div>
                             </div>
                             <div class="metric-box-grid mt-3">
                                 <div class="metric-box metric-box-rev">
@@ -993,7 +984,7 @@
                         <div>
                             <div class="filter-summary-head flex justify-between items-start">
                                 <h3 class="text-emerald-600 text-[10px] font-bold uppercase tracking-widest" id="monthTitle">本月統計</h3>
-                                <div class="filter-count-line text-[10px] text-emerald-700/70"><span id="mCountsLabel">月度數量</span>: <span class="text-emerald-800 font-bold" id="mCounts">冷0 / 洗0 / 水0</span></div>
+                                <div class="filter-count-line text-[10px] text-emerald-700/70"><span id="mCountsLabel">月度數量</span>: <span class="text-emerald-800 font-bold" id="mCounts">無資料</span></div>
                             </div>
                             <div class="metric-box-grid mt-3">
                                 <div class="metric-box metric-box-rev">
@@ -1052,7 +1043,7 @@
                                 <div class="absolute inset-y-0 left-3 flex items-center pointer-events-none text-slate-400">
                                     <i data-lucide="search" class="w-4 h-4"></i>
                                 </div>
-                                <input type="text" id="searchKeyword" oninput="filterRecords()" placeholder="可輸入多個關鍵字：姓名、電話、地址、機型、PASS、小幫手、備註..." class="w-full bg-slate-50 border-none rounded-xl p-3 pl-10 text-sm outline-none focus:ring-2 focus:ring-slate-100">
+                                <input type="text" id="searchKeyword" oninput="filterRecords()" placeholder="可輸入多個關鍵字：姓名、電話、地址、品項、PASS、小幫手..." class="w-full bg-slate-50 border-none rounded-xl p-3 pl-10 text-sm outline-none focus:ring-2 focus:ring-slate-100">
                             </div>
                             <div class="date-filter-row">
                                 <div>
@@ -1067,11 +1058,9 @@
                         </div>
                         <!-- 品項與進度篩選按鈕群組 -->
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
-                            <div id="typeFilterGroup" class="flex gap-1 bg-slate-50 rounded-xl p-1 h-[38px]">
-                                <button type="button" onclick="setTypeFilter('all', this)" class="type-btn flex-1 rounded-lg text-[10px] font-bold transition-all bg-slate-200 shadow-sm text-slate-700">全部品項</button>
-                                <button type="button" onclick="setTypeFilter('ac', this)" class="type-btn flex-1 rounded-lg text-[10px] font-bold transition-all text-slate-400">冷氣</button>
-                                <button type="button" onclick="setTypeFilter('wm', this)" class="type-btn flex-1 rounded-lg text-[10px] font-bold transition-all text-slate-400">洗衣機</button>
-                                <button type="button" onclick="setTypeFilter('wt', this)" class="type-btn flex-1 rounded-lg text-[10px] font-bold transition-all text-slate-400">水塔</button>
+                            <!-- 本次修正：這裡會動態載入按鈕，並加上橫向捲軸 -->
+                            <div id="typeFilterGroup" class="flex gap-1 bg-slate-50 rounded-xl p-1 h-[38px] overflow-x-auto scrollbar-hide items-center">
+                                <button type="button" onclick="setTypeFilter('all', this)" class="type-btn flex-1 min-w-fit rounded-lg px-3 py-1.5 text-[10px] font-bold transition-all bg-slate-200 shadow-sm text-slate-700">全部</button>
                             </div>
                             <div id="statusFilterGroup" class="flex gap-1 bg-slate-50 rounded-xl p-1 h-[38px]">
                                 <button type="button" onclick="setStatusFilter('all', this)" class="status-btn flex-1 rounded-lg text-[10px] font-bold transition-all bg-slate-200 shadow-sm text-slate-700">全部進度</button>
@@ -1137,7 +1126,6 @@
         const auth = getAuth(app);
         const provider = new GoogleAuthProvider();
         
-        // 本次修正：導入動態資料庫切換邏輯，移除寫死的 collection，讓每個人都有獨立空白資料庫
         let currentCollectionName = "cleaningRecords";
         const getRecordsCol = () => collection(db, currentCollectionName);
         const getRecordDoc = (id) => doc(db, currentCollectionName, id);
@@ -1146,6 +1134,7 @@
 
         let allRecords = [];
         let editingId = null;
+        let knownCategories = []; // 動態品項清單
         let knownAssistantNames = []; 
         let knownPassNames = [];
         let snapshotUnsubscribe = null;
@@ -1163,7 +1152,6 @@
 
         onAuthStateChanged(auth, (user) => {
             if (user) {
-                // 本次修正：若為原始管理員，讀取舊有公用資料庫；若為其他使用者，讀取專屬其 UID 的獨立空白資料庫
                 if (allowedEmails.includes(user.email.toLowerCase())) {
                     currentCollectionName = "cleaningRecords";
                 } else {
@@ -1208,7 +1196,6 @@
                 snapshotUnsubscribe();
                 snapshotUnsubscribe = null;
             }
-            // 本次修正：改為監聽動態對應的集合
             snapshotUnsubscribe = onSnapshot(getRecordsCol(), (snap) => {
                 allRecords = snap.docs.map(d => ({ id: d.id, ...d.data() }));
                 updateDatalists();
@@ -1228,6 +1215,25 @@
         document.getElementById('dateStartFilter').value = formatLocalDate(firstDayForFilter);
         document.getElementById('dateEndFilter').value = formatLocalDate(lastDayForFilter);
 
+        // 本次修正：向前相容轉譯器，安全轉換新舊資料庫結構
+        const normalizeRecord = (r) => {
+            if (r.serviceItems && Array.isArray(r.serviceItems)) return r.serviceItems;
+            
+            // 如果是舊格式，自動動態組成新格式陣列，保證資料不漏失
+            let items = [];
+            if (r.acBrand) {
+                r.acBrand.split('+').forEach(part => {
+                    const m = part.match(/(.*)-(.*)台(?:\*(.*)元)?/);
+                    if (m) items.push({ category: '冷氣', title: m[1], qty: parseInt(m[2]) || 0, price: m[3] ? parseInt(m[3]) : '' });
+                });
+            } else if (r.acCount > 0) {
+                items.push({ category: '冷氣', title: '', qty: parseInt(r.acCount), price: '' });
+            }
+            if (r.wmCount > 0) items.push({ category: '洗衣機', title: '', qty: parseInt(r.wmCount), price: '' });
+            if (r.wtCount > 0) items.push({ category: '水塔', title: '', qty: parseInt(r.wtCount), price: '' });
+            return items;
+        };
+
         window.showPage = (id) => {
             document.getElementById('formPage').classList.toggle('hidden', id !== 'formPage');
             document.getElementById('listPage').classList.toggle('hidden', id !== 'listPage');
@@ -1237,52 +1243,37 @@
         window.prepareNewForm = () => {
             editingId = null;
             document.getElementById('recordForm').reset();
-            document.getElementById('acDetailsContainer').innerHTML = '';
+            document.getElementById('serviceDetailsContainer').innerHTML = '';
+            addServiceItemRow('', '', 1, ''); // 自動增加一個空行方便登打
             document.getElementById('assistantDetailsContainer').innerHTML = '';
             document.getElementById('passFrom').value = '';
             document.getElementById('formNetProfit').value = '$0';
-            toggleAcBrand();
             updateQuickAssistantTags();
             updateQuickPassTags();
             showPage('formPage');
         };
 
-        window.handleAcCountChange = () => {
-            const count = parseInt(document.getElementById('acCount').value) || 0;
-            toggleAcBrand();
-            const container = document.getElementById('acDetailsContainer');
-            if (count > 0 && container.children.length === 0) addAcDetailRow(count);
-        };
-
-        window.toggleAcBrand = () => {
-            document.getElementById('acBrandSection').classList.toggle('hidden', document.getElementById('acCount').value <= 0);
-            lucide.createIcons();
-        };
-
-        window.addAcDetailRow = (val = "") => {
-            const container = document.getElementById('acDetailsContainer');
-            const totalTarget = parseInt(document.getElementById('acCount').value) || 0;
-            if (val === "" && totalTarget > 0) {
-                let currentFilled = 0;
-                document.querySelectorAll('.ac-qty-input').forEach(input => currentFilled += (parseInt(input.value) || 0));
-                val = Math.max(0, totalTarget - currentFilled);
-            }
+        // 本次修正：統一替換為動態品項輸入方法
+        window.addServiceItemRow = (cat = "", title = "", qty = 1, price = "") => {
+            const container = document.getElementById('serviceDetailsContainer');
             const div = document.createElement('div');
-            div.className = "grid grid-cols-12 gap-2 items-center ac-detail-row mb-2";
+            div.className = "grid grid-cols-12 gap-2 items-center service-detail-row mb-2";
             div.innerHTML = `
-                <div class="col-span-5"><input type="text" placeholder="廠牌" class="ac-brand-input w-full rounded-lg p-2 border border-emerald-100 text-sm"></div>
-                <div class="col-span-3"><input type="number" value="${val}" onfocus="this.select()" oninput="calcTotalFromDetails()" class="ac-qty-input w-full rounded-lg p-2 border border-emerald-100 text-sm font-bold"></div>
-                <div class="col-span-3"><input type="number" placeholder="單價" onfocus="this.select()" oninput="calcTotalFromDetails()" class="ac-price-input w-full rounded-lg p-2 border border-emerald-100 text-sm"></div>
+                <div class="col-span-4"><input type="text" value="${cat}" list="categoryNamesList" placeholder="品項(如冷氣)" class="svc-cat-input w-full rounded-lg p-2 border border-emerald-100 text-sm font-bold text-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"></div>
+                <div class="col-span-3"><input type="text" value="${title}" placeholder="說明" class="svc-title-input w-full rounded-lg p-2 border border-emerald-100 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20"></div>
+                <div class="col-span-2"><input type="number" value="${qty}" min="1" placeholder="數量" onfocus="this.select()" oninput="calcTotalFromDetails()" class="svc-qty-input w-full rounded-lg p-2 border border-emerald-100 text-sm font-bold text-center focus:outline-none focus:ring-2 focus:ring-emerald-500/20"></div>
+                <div class="col-span-2"><input type="number" value="${price}" placeholder="單價" onfocus="this.select()" oninput="calcTotalFromDetails()" class="svc-price-input w-full rounded-lg p-2 border border-emerald-100 text-sm text-center focus:outline-none focus:ring-2 focus:ring-emerald-500/20"></div>
                 <div class="col-span-1 text-center"><button type="button" onclick="this.parentElement.parentElement.remove(); calcTotalFromDetails();" class="text-rose-400 font-bold text-lg">&times;</button></div>
             `;
             container.appendChild(div);
+            lucide.createIcons();
         };
 
         window.calcTotalFromDetails = () => {
             let total = 0;
-            document.querySelectorAll('.ac-detail-row').forEach(row => {
-                const qty = parseInt(row.querySelector('.ac-qty-input').value) || 0;
-                const price = parseInt(row.querySelector('.ac-price-input').value) || 0;
+            document.querySelectorAll('.service-detail-row').forEach(row => {
+                const qty = parseInt(row.querySelector('.svc-qty-input').value) || 0;
+                const price = parseInt(row.querySelector('.svc-price-input').value) || 0;
                 total += (qty * price);
             });
             if (total > 0) {
@@ -1345,27 +1336,45 @@
         };
 
         window.toggleDone = async (id, currentStatus) => {
-            // 本次修正：使用動態文件參照 getRecordDoc
             await updateDoc(getRecordDoc(id), { status: currentStatus === 'completed' ? 'pending' : 'completed' });
         };
 
         window.togglePayment = async (id, currentPayment) => {
-            // 本次修正：使用動態文件參照 getRecordDoc
             await updateDoc(getRecordDoc(id), { payment: currentPayment === 'paid' ? 'unpaid' : 'paid' });
         };
 
         document.getElementById('recordForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const totalAc = parseInt(document.getElementById('acCount').value) || 0;
-            let acDetailTotal = 0; let acDetailsArray = [];
-            document.querySelectorAll('.ac-detail-row').forEach(row => {
-                const brand = row.querySelector('.ac-brand-input').value.trim();
-                const qty = parseInt(row.querySelector('.ac-qty-input').value) || 0;
-                const price = row.querySelector('.ac-price-input').value;
-                acDetailTotal += qty;
-                if (brand || qty > 0) acDetailsArray.push(`${brand || '機型未填'}-${qty}台${price ? `*${price}元` : ''}`);
+            
+            let serviceItems = [];
+            let acCount = 0, wmCount = 0, wtCount = 0;
+            let acDetailsArray = [];
+
+            // 擷取所有動態輸入的品項
+            document.querySelectorAll('.service-detail-row').forEach(row => {
+                const cat = row.querySelector('.svc-cat-input').value.trim();
+                const title = row.querySelector('.svc-title-input').value.trim();
+                const qty = parseInt(row.querySelector('.svc-qty-input').value) || 0;
+                const price = row.querySelector('.svc-price-input').value;
+                if (cat && qty > 0) {
+                    serviceItems.push({ category: cat, title, qty, price: price ? parseInt(price) : null });
+
+                    // 為了絕對保障舊有數據庫相容性，自動同步備份舊有的冷氣/洗衣機/水塔欄位值
+                    if (cat === '冷氣') {
+                        acCount += qty;
+                        acDetailsArray.push(`${title || '機型未填'}-${qty}台${price ? `*${price}元` : ''}`);
+                    } else if (cat === '洗衣機') {
+                        wmCount += qty;
+                    } else if (cat === '水塔') {
+                        wtCount += qty;
+                    }
+                }
             });
-            if (totalAc > 0 && acDetailTotal !== totalAc) { alert(`⚠️ 明細台數不符！`); return; }
+
+            if (serviceItems.length === 0) { 
+                alert('⚠️ 請至少輸入一項服務品項！'); 
+                return; 
+            }
 
             let assistantArray = [];
             document.querySelectorAll('.assistant-detail-row').forEach(row => {
@@ -1379,11 +1388,12 @@
                 customerName: document.getElementById('customerName').value,
                 phone: document.getElementById('phone').value || "",
                 address: document.getElementById('address').value || "",
-                acCount: totalAc, acBrand: acDetailsArray.join('+'),
+                
+                acCount, wmCount, wtCount, acBrand: acDetailsArray.join('+'), // 保留供未來可能降級相容
+                serviceItems, // 新的統一動態格式
+
                 assistantDetail: assistantArray.join(','),
                 passFrom: document.getElementById('passFrom').value.trim(),
-                wmCount: parseInt(document.getElementById('wmCount').value) || 0,
-                wtCount: parseInt(document.getElementById('wtCount').value) || 0,
                 totalAmount: parseInt(document.getElementById('totalAmount').value) || 0,
                 assistantPay: parseInt(document.getElementById('assistantPay').value) || 0,
                 note: document.getElementById('note').value || ''
@@ -1393,12 +1403,10 @@
                 if (editingId) {
                     const original = allRecords.find(r => r.id === editingId);
                     record.status = original.status; record.payment = original.payment;
-                    // 本次修正：使用動態文件參照 getRecordDoc
                     await updateDoc(getRecordDoc(editingId), record);
                     editingId = null;
                 } else {
                     record.status = 'pending'; record.payment = 'unpaid';
-                    // 本次修正：使用動態文件參照 getRecordsCol
                     await addDoc(getRecordsCol(), record);
                 }
                 prepareNewForm();
@@ -1406,10 +1414,26 @@
             } catch (err) { alert('儲存失敗'); }
         });
 
+        function updateTypeFilters(categories) {
+            const container = document.getElementById('typeFilterGroup');
+            let html = `<button type="button" onclick="setTypeFilter('all', this)" class="type-btn flex-1 min-w-fit rounded-lg px-3 py-1.5 text-[10px] font-bold transition-all ${currentTypeFilter === 'all' ? 'bg-slate-200 shadow-sm text-slate-700' : 'text-slate-400'}">全部</button>`;
+            categories.forEach(cat => {
+                const isActive = currentTypeFilter === cat;
+                const activeClasses = isActive ? 'bg-emerald-100 shadow-sm text-slate-700' : 'text-slate-400';
+                html += `<button type="button" onclick="setTypeFilter('${cat}', this)" class="type-btn flex-1 min-w-fit rounded-lg px-3 py-1.5 text-[10px] font-bold transition-all ${activeClasses}">${cat}</button>`;
+            });
+            container.innerHTML = html;
+        }
+
         function updateDatalists() {
+            const catNames = new Set();
             const asNames = new Set();
             const psNames = new Set();
+            
             allRecords.forEach(r => { 
+                const items = normalizeRecord(r);
+                items.forEach(item => { if (item.category) catNames.add(item.category); });
+
                 if (r.assistantDetail) {
                     r.assistantDetail.split(',').forEach(s => {
                         const name = s.split(':')[0];
@@ -1418,10 +1442,16 @@
                 } 
                 if (r.passFrom) psNames.add(r.passFrom);
             });
+            
+            knownCategories = Array.from(catNames).sort();
             knownAssistantNames = Array.from(asNames).sort();
             knownPassNames = Array.from(psNames).sort();
+            
+            document.getElementById('categoryNamesList').innerHTML = knownCategories.map(n => `<option value="${n}">`).join('');
             document.getElementById('assistantNamesList').innerHTML = knownAssistantNames.map(n => `<option value="${n}">`).join('');
             document.getElementById('passNamesList').innerHTML = knownPassNames.map(n => `<option value="${n}">`).join('');
+            
+            updateTypeFilters(knownCategories); // 動態建立篩選按鈕
             updateQuickAssistantTags();
             updateQuickPassTags();
         }
@@ -1451,17 +1481,9 @@
             lucide.createIcons();
         };
 
-        window.showAllAssistantDetails = () => {
-            toggleAssistantModal("小幫手薪資總計 (全期)", allRecords);
-        };
-        window.showYearAssistantDetails = () => {
-            const title = document.getElementById('yearTitle').innerText;
-            toggleAssistantModal(`${title} 小幫手薪資`, currentYearRecords);
-        };
-        window.showMonthAssistantDetails = () => {
-            const title = document.getElementById('monthTitle').innerText;
-            toggleAssistantModal(`${title} 小幫手薪資`, currentMonthRecords);
-        };
+        window.showAllAssistantDetails = () => { toggleAssistantModal("小幫手薪資總計 (全期)", allRecords); };
+        window.showYearAssistantDetails = () => { toggleAssistantModal(`${document.getElementById('yearTitle').innerText} 小幫手薪資`, currentYearRecords); };
+        window.showMonthAssistantDetails = () => { toggleAssistantModal(`${document.getElementById('monthTitle').innerText} 小幫手薪資`, currentMonthRecords); };
 
         function renderAssistantSummary(records) {
             const summary = {};
@@ -1542,15 +1564,15 @@
                 parts.push('全部日期');
             }
             if (kw) parts.push(`關鍵字「${kw}」`);
-            if (type !== 'all') parts.push({ ac: '冷氣', wm: '洗衣機', wt: '水塔' }[type] || type);
+            if (type !== 'all') parts.push(type); // 本次修正：直接顯示品項名稱
             if (status !== 'all') parts.push({ completed: '已完成', pending: '待處理' }[status] || status);
             el.innerText = `目前：${parts.join('｜')}`;
         }
 
         function resetFilterButtonStyles(groupSelector, activeValue) {
-            const colorMap = { all: 'bg-slate-200', completed: 'bg-emerald-100', pending: 'bg-amber-100', ac: 'bg-emerald-100', wm: 'bg-blue-100', wt: 'bg-purple-100' };
+            const colorMap = { all: 'bg-slate-200', completed: 'bg-emerald-100', pending: 'bg-amber-100' };
             document.querySelectorAll(groupSelector).forEach(btn => {
-                btn.classList.remove('bg-white', 'bg-slate-200', 'bg-emerald-100', 'bg-amber-100', 'bg-blue-100', 'bg-purple-100', 'shadow-sm', 'text-slate-700');
+                btn.classList.remove('bg-white', 'bg-slate-200', 'bg-emerald-100', 'bg-amber-100', 'shadow-sm', 'text-slate-700');
                 btn.classList.add('text-slate-400');
                 const onclickText = btn.getAttribute('onclick') || '';
                 if (onclickText.includes(`'${activeValue}'`)) {
@@ -1565,21 +1587,29 @@
             setDateFilterToCurrentMonth();
             currentTypeFilter = 'all';
             currentStatusFilter = 'all';
-            resetFilterButtonStyles('.type-btn', 'all');
+            
+            // 恢復所有動態品項按鈕顏色
+            document.querySelectorAll('.type-btn').forEach(b => {
+                b.classList.remove('bg-emerald-100', 'bg-slate-200', 'shadow-sm', 'text-slate-700');
+                b.classList.add('text-slate-400');
+                if (b.innerText === '全部') {
+                    b.classList.add('bg-slate-200', 'shadow-sm', 'text-slate-700');
+                    b.classList.remove('text-slate-400');
+                }
+            });
             resetFilterButtonStyles('.status-btn', 'all');
+            
             filterRecords();
             lucide.createIcons();
         };
 
         window.clearDateFilter = window.clearAllFilters;
 
-        // 切換懸浮待收列表面板
         window.toggleFloatingUnpaid = () => {
             const list = document.getElementById('floatingUnpaidList');
             if (list) list.classList.toggle('hidden');
         };
 
-        // 本次修正：處理進度按鈕點選與配色
         window.setStatusFilter = (val, btn) => {
             currentStatusFilter = val;
             const statusColors = { all: 'bg-slate-200', completed: 'bg-emerald-100', pending: 'bg-amber-100' };
@@ -1592,15 +1622,17 @@
             filterRecords();
         };
 
-        // 本次修正：處理品項按鈕點選與配色
         window.setTypeFilter = (val, btn) => {
             currentTypeFilter = val;
-            const typeColors = { all: 'bg-slate-200', ac: 'bg-emerald-100', wm: 'bg-blue-100', wt: 'bg-purple-100' };
             document.querySelectorAll('.type-btn').forEach(b => {
-                b.classList.remove('bg-white', 'bg-slate-200', 'bg-emerald-100', 'bg-blue-100', 'bg-purple-100', 'shadow-sm', 'text-slate-700');
+                b.classList.remove('bg-slate-200', 'bg-emerald-100', 'shadow-sm', 'text-slate-700');
                 b.classList.add('text-slate-400');
             });
-            btn.classList.add(typeColors[val], 'shadow-sm', 'text-slate-700');
+            if (val === 'all') {
+                btn.classList.add('bg-slate-200', 'shadow-sm', 'text-slate-700');
+            } else {
+                btn.classList.add('bg-emerald-100', 'shadow-sm', 'text-slate-700');
+            }
             btn.classList.remove('text-slate-400');
             filterRecords();
         };
@@ -1613,13 +1645,16 @@
             const type = currentTypeFilter;
             const status = currentStatusFilter;
 
-            let aAc = 0, aWm = 0, aWt = 0, aRev = 0, aExp = 0;
-            let yRev = 0, yExp = 0, yAc = 0, yWm = 0, yWt = 0;
-            let fRev = 0, fExp = 0, fAc = 0, fWm = 0, fWt = 0;
+            let aRev = 0, aExp = 0, yRev = 0, yExp = 0, fRev = 0, fExp = 0;
             let systemUnpaidDetails = [];
             let systemPendingDetails = [];
             let yPassSummary = {};
             let fPassSummary = {};
+
+            // 本次修正：動態品項計數器
+            let allCatAgg = {}; 
+            let yCatAgg = {};
+            let fCatAgg = {};
 
             currentYearRecords = [];
             currentMonthRecords = [];
@@ -1630,6 +1665,7 @@
             const currentMonthLast = formatLocalDate(new Date(now.getFullYear(), now.getMonth() + 1, 0));
             const isPureCurrentMonth = startDate === currentMonthFirst && endDate === currentMonthLast && !kw && type === 'all' && status === 'all';
             updateFilterStatusText(isPureCurrentMonth, startDate, endDate, kw, type, status);
+            
             const periodTitle = (() => {
                 if (isPureCurrentMonth) return `${String(now.getMonth() + 1).padStart(2, '0')} 月份統計`;
                 if (startDate && endDate) return `${startDate.replaceAll('-', '/')}～${endDate.replaceAll('-', '/')} 篩選統計`;
@@ -1650,7 +1686,9 @@
             const getDateOnly = (record) => (record.bookingTime || '').substring(0, 10);
             const normalizeSearchText = (text) => String(text || '').toLowerCase().replace(/[\s\-－–—_()（）\[\]【】,，.。:：;；/\\]+/g, '');
             const getSearchText = (record) => {
-                const raw = `${record.customerName || ''} ${record.phone || ''} ${record.address || ''} ${record.acBrand || ''} ${record.assistantDetail || ''} ${record.passFrom || ''} ${record.note || ''}`.toLowerCase();
+                // 將所有動態品項內容也加入搜尋
+                const itemsText = normalizeRecord(record).map(i => `${i.category} ${i.title}`).join(' ');
+                const raw = `${record.customerName || ''} ${record.phone || ''} ${record.address || ''} ${itemsText} ${record.assistantDetail || ''} ${record.passFrom || ''} ${record.note || ''}`.toLowerCase();
                 return { raw, compact: normalizeSearchText(raw) };
             };
             const matchesKeywords = (record) => {
@@ -1661,7 +1699,11 @@
                     return searchText.raw.includes(term) || (normalizedTerm && searchText.compact.includes(normalizedTerm));
                 });
             };
-            const getQty = (record) => (parseInt(record.acCount) || 0) + (parseInt(record.wmCount) || 0) + (parseInt(record.wtCount) || 0);
+            
+            const getQty = (record) => {
+                return normalizeRecord(record).reduce((sum, item) => sum + item.qty, 0);
+            };
+
             const addPassSummary = (target, record) => {
                 if (!record.passFrom) return;
                 target[record.passFrom] = (target[record.passFrom] || { qty: 0, rev: 0, exp: 0 });
@@ -1675,7 +1717,10 @@
                 const matchSearch = matchesKeywords(i);
                 const matchStart = !startDate || (recordDate && recordDate >= startDate);
                 const matchEnd = !endDate || (recordDate && recordDate <= endDate);
-                const matchType = (type === 'all' || (type === 'ac' && (parseInt(i.acCount) || 0) > 0) || (type === 'wm' && (parseInt(i.wmCount) || 0) > 0) || (type === 'wt' && (parseInt(i.wtCount) || 0) > 0));
+                
+                const items = normalizeRecord(i);
+                const matchType = (type === 'all' || items.some(item => item.category === type));
+                
                 const matchStatus = (status === 'all' || i.status === status);
                 return matchSearch && matchStart && matchEnd && matchType && matchStatus;
             });
@@ -1683,9 +1728,7 @@
             allRecords.forEach(r => {
                 const rev = parseInt(r.totalAmount) || 0;
                 const exp = parseInt(r.assistantPay) || 0;
-                const ac = parseInt(r.acCount) || 0;
-                const wm = parseInt(r.wmCount) || 0;
-                const wt = parseInt(r.wtCount) || 0;
+                const items = normalizeRecord(r);
 
                 if (r.payment === 'unpaid') {
                     systemUnpaidDetails.push({ id: r.id, name: r.customerName || '未填姓名', amount: rev });
@@ -1694,26 +1737,49 @@
                     systemPendingDetails.push({ id: r.id, name: r.customerName || '未填姓名', time: (r.bookingTime || '').replace('T', ' ') });
                 }
 
-                aAc += ac; aWm += wm; aWt += wt; aRev += rev; aExp += exp;
+                aRev += rev; aExp += exp;
+                items.forEach(item => {
+                    allCatAgg[item.category] = (allCatAgg[item.category] || 0) + item.qty;
+                });
 
                 const iY = (r.bookingTime || '').split('-')[0];
                 if (iY === filterYear) {
                     currentYearRecords.push(r);
-                    yRev += rev; yExp += exp; yAc += ac; yWm += wm; yWt += wt;
+                    yRev += rev; yExp += exp;
                     addPassSummary(yPassSummary, r);
+                    items.forEach(item => {
+                        yCatAgg[item.category] = (yCatAgg[item.category] || 0) + item.qty;
+                    });
                 }
             });
 
             baseFiltered.forEach(r => {
                 const rev = parseInt(r.totalAmount) || 0;
                 const exp = parseInt(r.assistantPay) || 0;
-                const ac = parseInt(r.acCount) || 0;
-                const wm = parseInt(r.wmCount) || 0;
-                const wt = parseInt(r.wtCount) || 0;
+                const items = normalizeRecord(r);
+
                 currentMonthRecords.push(r);
-                fRev += rev; fExp += exp; fAc += ac; fWm += wm; fWt += wt;
+                fRev += rev; fExp += exp;
                 addPassSummary(fPassSummary, r);
+                items.forEach(item => {
+                    fCatAgg[item.category] = (fCatAgg[item.category] || 0) + item.qty;
+                });
             });
+
+            // 更新全部總計區塊
+            const allStatsContainer = document.getElementById('allStatsContainer');
+            allStatsContainer.innerHTML = Object.entries(allCatAgg)
+                .sort((a,b) => b[1] - a[1]) 
+                .map(([cat, qty]) => `<div><p class="text-[10px] text-white/65">${cat}</p><p class="text-xl font-bold">${qty}</p></div>`)
+                .join('');
+            if(Object.keys(allCatAgg).length === 0) allStatsContainer.innerHTML = `<div><p class="text-[10px] text-white/65">品項</p><p class="text-xl font-bold">0</p></div>`;
+
+            // 更新月與年動態字串
+            const formatCatSummary = (aggObj) => {
+                const arr = Object.entries(aggObj).sort((a,b) => b[1] - a[1]);
+                if(arr.length === 0) return '無資料';
+                return arr.map(([cat, qty]) => `${cat}${qty}`).join(' / ');
+            };
 
             const floatingWrap = document.getElementById('floatingUnpaidWrap');
             const floatingUnpaidBadgeCount = document.getElementById('unpaidCountBadge');
@@ -1775,7 +1841,7 @@
                                 <span class="pass-avatar">${k.substring(0, 1)}</span>
                                 <span class="pass-name">${k}</span>
                             </div>
-                            <span class="pass-qty">${summary[k].qty} 台</span>
+                            <span class="pass-qty">${summary[k].qty} 單位</span>
                         </div>
                         <div class="pass-metrics">
                             <div class="pass-metric">
@@ -1799,9 +1865,6 @@
             renderPassSummaryCards(yPassSummary, 'passYearSummarySection', 'passYearSummaryList', 'passYearTotal');
             renderPassSummaryCards(fPassSummary, 'passSummarySection', 'passSummaryList', 'passMonthTotal');
 
-            document.getElementById('allAc').innerText = aAc;
-            document.getElementById('allWm').innerText = aWm;
-            document.getElementById('allWt').innerText = aWt;
             document.getElementById('allRev').innerText = `$${aRev.toLocaleString()}`;
             document.getElementById('allExp').innerText = `$${aExp.toLocaleString()}`;
             document.getElementById('allNet').innerText = `$${(aRev - aExp).toLocaleString()}`;
@@ -1809,12 +1872,12 @@
             document.getElementById('yRev').innerText = `$${yRev.toLocaleString()}`;
             document.getElementById('yExp').innerText = `$${yExp.toLocaleString()}`;
             document.getElementById('yNet').innerText = `$${(yRev - yExp).toLocaleString()}`;
-            document.getElementById('yCounts').innerText = `冷${yAc} / 洗${yWm} / 水${yWt}`;
+            document.getElementById('yCounts').innerText = formatCatSummary(yCatAgg);
 
             document.getElementById('mRev').innerText = `$${fRev.toLocaleString()}`;
             document.getElementById('mExp').innerText = `$${fExp.toLocaleString()}`;
             document.getElementById('mNet').innerText = `$${(fRev - fExp).toLocaleString()}`;
-            document.getElementById('mCounts').innerText = `冷${fAc} / 洗${fWm} / 水${fWt}｜${baseFiltered.length} 筆`;
+            document.getElementById('mCounts').innerText = `${formatCatSummary(fCatAgg)}｜${baseFiltered.length} 筆`;
 
             renderRecords(baseFiltered.sort((a, b) => (b.bookingTime || '').localeCompare(a.bookingTime || '')));
             lucide.createIcons();
@@ -1824,10 +1887,12 @@
             const list = document.getElementById('recordList');
             list.innerHTML = data.map(i => {
                 let services = [];
-                const acTitle = `冷氣${i.acCount}台`;
-                if(i.acCount > 0) services.push(i.acBrand ? `${acTitle}：${i.acBrand}` : acTitle);
-                if(i.wmCount > 0) services.push(`洗衣機${i.wmCount}台`);
-                if(i.wtCount > 0) services.push(`水塔${i.wtCount}口`);
+                const items = normalizeRecord(i);
+                
+                items.forEach(item => {
+                    let unit = item.category === '水塔' ? '口' : '台';
+                    services.push(`${item.category}${item.qty}${unit}${item.title ? `：${item.title}` : ''}`);
+                });
 
                 let asDisplay = "";
                 if (i.assistantDetail) {
@@ -1914,33 +1979,25 @@
             document.getElementById('customerName').value = r.customerName;
             document.getElementById('phone').value = r.phone || "";
             document.getElementById('address').value = r.address || "";
-            document.getElementById('acCount').value = r.acCount;
-            document.getElementById('wmCount').value = r.wmCount;
-            document.getElementById('wtCount').value = r.wtCount;
             document.getElementById('totalAmount').value = r.totalAmount;
             document.getElementById('assistantPay').value = r.assistantPay;
             document.getElementById('note').value = r.note;
             document.getElementById('passFrom').value = r.passFrom || "";
             
-            const acContainer = document.getElementById('acDetailsContainer');
-            acContainer.innerHTML = '';
-            if (r.acBrand) {
-                r.acBrand.split('+').forEach(part => {
-                    const m = part.match(/(.*)-(.*)台(?:\*(.*)元)?/);
-                    if (m) {
-                        const div = document.createElement('div');
-                        div.className = "grid grid-cols-12 gap-2 items-center ac-detail-row mb-2";
-                        div.innerHTML = `<div class="col-span-5"><input type="text" value="${m[1]}" class="ac-brand-input w-full rounded-lg p-2 border border-emerald-100 text-sm"></div><div class="col-span-3"><input type="number" value="${m[2]}" onfocus="this.select()" oninput="calcTotalFromDetails()" class="ac-qty-input w-full rounded-lg p-2 border border-emerald-100 text-sm font-bold"></div><div class="col-span-3"><input type="number" value="${m[3]||''}" onfocus="this.select()" oninput="calcTotalFromDetails()" class="ac-price-input w-full rounded-lg p-2 border border-emerald-100 text-sm"></div><div class="col-span-1 text-center"><button type="button" onclick="this.parentElement.parentElement.remove(); calcTotalFromDetails();" class="text-rose-400 font-bold text-lg">&times;</button></div>`;
-                        acContainer.appendChild(div);
-                    }
-                });
-            }
+            const serviceContainer = document.getElementById('serviceDetailsContainer');
+            serviceContainer.innerHTML = '';
+            const items = normalizeRecord(r);
+            items.forEach(item => {
+                addServiceItemRow(item.category, item.title, item.qty, item.price || "");
+            });
+            if (items.length === 0) addServiceItemRow('', '', 1, '');
+
             const asContainer = document.getElementById('assistantDetailsContainer');
             asContainer.innerHTML = '';
             if (r.assistantDetail) {
                 r.assistantDetail.split(',').forEach(s => { const [name, amt] = s.split(':'); addAssistantRow(name, amt); });
             }
-            toggleAcBrand();
+            
             updateQuickAssistantTags();
             updateQuickPassTags();
             calcFormNet();
@@ -1959,9 +2016,8 @@
             endInput.value = formatLocalDate(last);
             filterRecords();
         };
-        window.quickFilterUnpaid = () => { /* 此功能現改為由懸浮驚嘆號控制 */ };
+
         window.deleteRec = async (id) => { 
-            // 本次修正：使用動態文件參照 getRecordDoc
             if(confirm('確定要刪除嗎？')) await deleteDoc(getRecordDoc(id)); 
         };
 
