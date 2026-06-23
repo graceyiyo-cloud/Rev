@@ -3,17 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>冷氣清洗紀錄</title>
+    <title>清洗紀錄</title>
 
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="冷氣紀錄">
+    <meta name="apple-mobile-web-app-title" content="清洗紀錄">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#475569">
 
     <link rel="apple-touch-icon" href="./icon.png">
     
-    <link rel="manifest" href='data:application/manifest+json,{"name":"冷氣清洗紀錄","short_name":"冷紀錄","start_url":".","display":"standalone","background_color":"#ffffff","theme_color":"#475569","icons":[{"src":"./icon.png","sizes":"512x512","type":"image/png"}]}'>
+    <link rel="manifest" href='data:application/manifest+json,{"name":"清洗紀錄","short_name":"紀錄","start_url":".","display":"standalone","background_color":"#ffffff","theme_color":"#475569","icons":[{"src":"./icon.png","sizes":"512x512","type":"image/png"}]}'>
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -835,31 +835,44 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">預約日期時間</label>
-                            <input type="datetime-local" id="bookingTime" required class="block w-full border-slate-200 rounded-xl p-3 border text-sm outline-none">
+                            <input type="datetime-local" id="bookingTime" required class="block w-full border-slate-200 rounded-xl p-3 border text-sm outline-none focus:ring-2 focus:ring-emerald-500/20">
                         </div>
                         <div>
                             <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">客戶姓名</label>
-                            <input type="text" id="customerName" required class="block w-full border-slate-200 rounded-xl p-3 border text-sm outline-none">
+                            <input type="text" id="customerName" required class="block w-full border-slate-200 rounded-xl p-3 border text-sm outline-none focus:ring-2 focus:ring-emerald-500/20">
                         </div>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">連絡電話</label>
-                            <input type="tel" id="phone" class="block w-full border-slate-200 rounded-xl p-3 border text-sm outline-none">
+                            <input type="tel" id="phone" class="block w-full border-slate-200 rounded-xl p-3 border text-sm outline-none focus:ring-2 focus:ring-emerald-500/20">
                         </div>
                         <div>
                             <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">施工地址</label>
-                            <input type="text" id="address" class="block w-full border-slate-200 rounded-xl p-3 border text-sm outline-none">
+                            <input type="text" id="address" class="block w-full border-slate-200 rounded-xl p-3 border text-sm outline-none focus:ring-2 focus:ring-emerald-500/20">
+                        </div>
+                    </div>
+                    
+                    <!-- 本次修正：加入車輛廠牌與車牌號碼，無縫融入原版排版 -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">車輛廠牌</label>
+                            <input type="text" id="carBrand" placeholder="例如：Toyota, BMW" class="block w-full border-slate-200 rounded-xl p-3 border text-sm outline-none focus:ring-2 focus:ring-emerald-500/20">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">車牌號碼</label>
+                            <input type="text" id="licensePlate" placeholder="例如：ABC-1234" class="block w-full border-slate-200 rounded-xl p-3 border text-sm outline-none focus:ring-2 focus:ring-emerald-500/20">
                         </div>
                     </div>
 
-                    <!-- 本次修正：更靈活的營業品項輸入區塊 -->
                     <div id="serviceItemSection" class="space-y-2 bg-emerald-50/30 p-4 rounded-xl border border-emerald-100">
                         <div class="flex justify-between items-center mb-1">
                             <label class="block text-xs font-bold text-emerald-600 uppercase tracking-wider"><i data-lucide="layers" class="lucide mr-1"></i> 營業品項明細</label>
                             <button type="button" onclick="addServiceItemRow()" class="text-[10px] bg-emerald-600 text-white px-2 py-1 rounded shadow-sm">+ 增加品項</button>
                         </div>
                         <div id="serviceDetailsContainer" class="space-y-2"></div>
+                        <!-- 本次修正：加入營業品項的一鍵快選區塊 -->
+                        <div id="quickCategoryTags" class="flex flex-wrap gap-2 mt-2 pt-2 border-t border-emerald-100/50"></div>
                     </div>
                     <datalist id="categoryNamesList"></datalist>
 
@@ -877,7 +890,7 @@
                             <label class="block text-xs font-bold text-indigo-600 uppercase tracking-wider"><i data-lucide="forward" class="lucide mr-1"></i> PASS 案件設定</label>
                         </div>
                         <div class="flex gap-2">
-                            <input type="text" id="passFrom" list="passNamesList" placeholder="輸入 PASS 來源對象名稱" class="flex-1 rounded-lg p-2 border border-indigo-100 text-sm" oninput="updateQuickPassTags()">
+                            <input type="text" id="passFrom" list="passNamesList" placeholder="輸入 PASS 來源對象名稱" class="flex-1 rounded-lg p-2 border border-indigo-100 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20" oninput="updateQuickPassTags()">
                         </div>
                         <div id="quickPassTags" class="flex flex-wrap gap-2 mt-2 pt-2 border-t border-indigo-100/50"></div>
                     </div>
@@ -906,7 +919,6 @@
                         <span>全</span><span>部</span><span>年</span><span>份</span><span>總</span><span>累</span><span>計</span>
                     </div>
                     <div class="flex-1">
-                        <!-- 本次修正：動態顯示所有品項統計 -->
                         <div id="allStatsContainer" class="grid grid-cols-3 gap-2 text-center border-b border-white/10 pb-2 mb-2">
                             <!-- 動態填入 -->
                         </div>
@@ -1017,7 +1029,6 @@
                             </div>
                         </div>
 
-                        <!-- 舊有待收區塊已隱藏 -->
                         <div id="unpaidSection" class="hidden"></div>
                     </div>
                 </div>
@@ -1043,7 +1054,8 @@
                                 <div class="absolute inset-y-0 left-3 flex items-center pointer-events-none text-slate-400">
                                     <i data-lucide="search" class="w-4 h-4"></i>
                                 </div>
-                                <input type="text" id="searchKeyword" oninput="filterRecords()" placeholder="可輸入多個關鍵字：姓名、電話、地址、品項、PASS、小幫手..." class="w-full bg-slate-50 border-none rounded-xl p-3 pl-10 text-sm outline-none focus:ring-2 focus:ring-slate-100">
+                                <!-- 本次修正：提示可搜尋車牌 -->
+                                <input type="text" id="searchKeyword" oninput="filterRecords()" placeholder="可輸入：姓名、車牌、廠牌、電話、品項、小幫手..." class="w-full bg-slate-50 border-none rounded-xl p-3 pl-10 text-sm outline-none focus:ring-2 focus:ring-slate-100">
                             </div>
                             <div class="date-filter-row">
                                 <div>
@@ -1056,9 +1068,7 @@
                                 </div>
                             </div>
                         </div>
-                        <!-- 品項與進度篩選按鈕群組 -->
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
-                            <!-- 本次修正：這裡會動態載入按鈕，並加上橫向捲軸 -->
                             <div id="typeFilterGroup" class="flex gap-1 bg-slate-50 rounded-xl p-1 h-[38px] overflow-x-auto scrollbar-hide items-center">
                                 <button type="button" onclick="setTypeFilter('all', this)" class="type-btn flex-1 min-w-fit rounded-lg px-3 py-1.5 text-[10px] font-bold transition-all bg-slate-200 shadow-sm text-slate-700">全部</button>
                             </div>
@@ -1078,7 +1088,6 @@
             </section>
         </div>
 
-        <!-- 懸浮待收提醒 HTML 結構 -->
         <div id="floatingUnpaidWrap" class="hidden">
             <div id="floatingUnpaidList" class="floating-unpaid-list hidden">
                 <h5 class="text-[11px] font-bold text-slate-700 uppercase tracking-widest mb-2 pb-2 border-b border-slate-100 flex justify-between items-center">
@@ -1142,7 +1151,6 @@
         let currentYearRecords = [];
         let currentMonthRecords = [];
         
-        // 狀態與品項篩選變數
         let currentStatusFilter = 'all';
         let currentTypeFilter = 'all';
 
@@ -1215,11 +1223,9 @@
         document.getElementById('dateStartFilter').value = formatLocalDate(firstDayForFilter);
         document.getElementById('dateEndFilter').value = formatLocalDate(lastDayForFilter);
 
-        // 本次修正：向前相容轉譯器，安全轉換新舊資料庫結構
         const normalizeRecord = (r) => {
             if (r.serviceItems && Array.isArray(r.serviceItems)) return r.serviceItems;
             
-            // 如果是舊格式，自動動態組成新格式陣列，保證資料不漏失
             let items = [];
             if (r.acBrand) {
                 r.acBrand.split('+').forEach(part => {
@@ -1244,22 +1250,22 @@
             editingId = null;
             document.getElementById('recordForm').reset();
             document.getElementById('serviceDetailsContainer').innerHTML = '';
-            addServiceItemRow('', '', 1, ''); // 自動增加一個空行方便登打
+            addServiceItemRow('', '', 1, ''); 
             document.getElementById('assistantDetailsContainer').innerHTML = '';
             document.getElementById('passFrom').value = '';
             document.getElementById('formNetProfit').value = '$0';
+            updateQuickCategoryTags();
             updateQuickAssistantTags();
             updateQuickPassTags();
             showPage('formPage');
         };
 
-        // 本次修正：統一替換為動態品項輸入方法
         window.addServiceItemRow = (cat = "", title = "", qty = 1, price = "") => {
             const container = document.getElementById('serviceDetailsContainer');
             const div = document.createElement('div');
             div.className = "grid grid-cols-12 gap-2 items-center service-detail-row mb-2";
             div.innerHTML = `
-                <div class="col-span-4"><input type="text" value="${cat}" list="categoryNamesList" placeholder="品項(如冷氣)" class="svc-cat-input w-full rounded-lg p-2 border border-emerald-100 text-sm font-bold text-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"></div>
+                <div class="col-span-4"><input type="text" value="${cat}" list="categoryNamesList" placeholder="品項(如洗車)" class="svc-cat-input w-full rounded-lg p-2 border border-emerald-100 text-sm font-bold text-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"></div>
                 <div class="col-span-3"><input type="text" value="${title}" placeholder="說明" class="svc-title-input w-full rounded-lg p-2 border border-emerald-100 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20"></div>
                 <div class="col-span-2"><input type="number" value="${qty}" min="1" placeholder="數量" onfocus="this.select()" oninput="calcTotalFromDetails()" class="svc-qty-input w-full rounded-lg p-2 border border-emerald-100 text-sm font-bold text-center focus:outline-none focus:ring-2 focus:ring-emerald-500/20"></div>
                 <div class="col-span-2"><input type="number" value="${price}" placeholder="單價" onfocus="this.select()" oninput="calcTotalFromDetails()" class="svc-price-input w-full rounded-lg p-2 border border-emerald-100 text-sm text-center focus:outline-none focus:ring-2 focus:ring-emerald-500/20"></div>
@@ -1309,6 +1315,18 @@
             document.getElementById('formNetProfit').value = `$${(rev - exp).toLocaleString()}`;
         };
 
+        // 本次修正：新增品項的一鍵快選區塊生成
+        window.updateQuickCategoryTags = () => {
+            const container = document.getElementById('quickCategoryTags');
+            if (knownCategories.length === 0) {
+                container.innerHTML = '<span class="text-[10px] text-emerald-400">尚無常用營業品項</span>';
+                return;
+            }
+            container.innerHTML = knownCategories.map(cat => `
+                <button type="button" onclick="addServiceItemRow('${cat}', '', 1, '')" class="px-2 py-1 bg-white border border-emerald-200 text-emerald-600 rounded text-[10px] hover:bg-emerald-50 transition-colors font-bold">+ ${cat}</button>
+            `).join('');
+        };
+
         window.updateQuickAssistantTags = () => {
             const container = document.getElementById('quickAssistantTags');
             const currentNamesInForm = Array.from(document.querySelectorAll('.as-name-input')).map(input => input.value.trim());
@@ -1350,7 +1368,6 @@
             let acCount = 0, wmCount = 0, wtCount = 0;
             let acDetailsArray = [];
 
-            // 擷取所有動態輸入的品項
             document.querySelectorAll('.service-detail-row').forEach(row => {
                 const cat = row.querySelector('.svc-cat-input').value.trim();
                 const title = row.querySelector('.svc-title-input').value.trim();
@@ -1359,7 +1376,6 @@
                 if (cat && qty > 0) {
                     serviceItems.push({ category: cat, title, qty, price: price ? parseInt(price) : null });
 
-                    // 為了絕對保障舊有數據庫相容性，自動同步備份舊有的冷氣/洗衣機/水塔欄位值
                     if (cat === '冷氣') {
                         acCount += qty;
                         acDetailsArray.push(`${title || '機型未填'}-${qty}台${price ? `*${price}元` : ''}`);
@@ -1388,9 +1404,11 @@
                 customerName: document.getElementById('customerName').value,
                 phone: document.getElementById('phone').value || "",
                 address: document.getElementById('address').value || "",
+                carBrand: document.getElementById('carBrand').value.trim(),
+                licensePlate: document.getElementById('licensePlate').value.trim(),
                 
-                acCount, wmCount, wtCount, acBrand: acDetailsArray.join('+'), // 保留供未來可能降級相容
-                serviceItems, // 新的統一動態格式
+                acCount, wmCount, wtCount, acBrand: acDetailsArray.join('+'), 
+                serviceItems, 
 
                 assistantDetail: assistantArray.join(','),
                 passFrom: document.getElementById('passFrom').value.trim(),
@@ -1451,7 +1469,8 @@
             document.getElementById('assistantNamesList').innerHTML = knownAssistantNames.map(n => `<option value="${n}">`).join('');
             document.getElementById('passNamesList').innerHTML = knownPassNames.map(n => `<option value="${n}">`).join('');
             
-            updateTypeFilters(knownCategories); // 動態建立篩選按鈕
+            updateTypeFilters(knownCategories); 
+            updateQuickCategoryTags();
             updateQuickAssistantTags();
             updateQuickPassTags();
         }
@@ -1564,7 +1583,7 @@
                 parts.push('全部日期');
             }
             if (kw) parts.push(`關鍵字「${kw}」`);
-            if (type !== 'all') parts.push(type); // 本次修正：直接顯示品項名稱
+            if (type !== 'all') parts.push(type); 
             if (status !== 'all') parts.push({ completed: '已完成', pending: '待處理' }[status] || status);
             el.innerText = `目前：${parts.join('｜')}`;
         }
@@ -1588,7 +1607,6 @@
             currentTypeFilter = 'all';
             currentStatusFilter = 'all';
             
-            // 恢復所有動態品項按鈕顏色
             document.querySelectorAll('.type-btn').forEach(b => {
                 b.classList.remove('bg-emerald-100', 'bg-slate-200', 'shadow-sm', 'text-slate-700');
                 b.classList.add('text-slate-400');
@@ -1651,7 +1669,6 @@
             let yPassSummary = {};
             let fPassSummary = {};
 
-            // 本次修正：動態品項計數器
             let allCatAgg = {}; 
             let yCatAgg = {};
             let fCatAgg = {};
@@ -1686,9 +1703,9 @@
             const getDateOnly = (record) => (record.bookingTime || '').substring(0, 10);
             const normalizeSearchText = (text) => String(text || '').toLowerCase().replace(/[\s\-－–—_()（）\[\]【】,，.。:：;；/\\]+/g, '');
             const getSearchText = (record) => {
-                // 將所有動態品項內容也加入搜尋
                 const itemsText = normalizeRecord(record).map(i => `${i.category} ${i.title}`).join(' ');
-                const raw = `${record.customerName || ''} ${record.phone || ''} ${record.address || ''} ${itemsText} ${record.assistantDetail || ''} ${record.passFrom || ''} ${record.note || ''}`.toLowerCase();
+                // 本次修正：將車廠與車牌加入搜尋池
+                const raw = `${record.customerName || ''} ${record.phone || ''} ${record.address || ''} ${record.carBrand || ''} ${record.licensePlate || ''} ${itemsText} ${record.assistantDetail || ''} ${record.passFrom || ''} ${record.note || ''}`.toLowerCase();
                 return { raw, compact: normalizeSearchText(raw) };
             };
             const matchesKeywords = (record) => {
@@ -1766,7 +1783,6 @@
                 });
             });
 
-            // 更新全部總計區塊
             const allStatsContainer = document.getElementById('allStatsContainer');
             allStatsContainer.innerHTML = Object.entries(allCatAgg)
                 .sort((a,b) => b[1] - a[1]) 
@@ -1774,7 +1790,6 @@
                 .join('');
             if(Object.keys(allCatAgg).length === 0) allStatsContainer.innerHTML = `<div><p class="text-[10px] text-white/65">品項</p><p class="text-xl font-bold">0</p></div>`;
 
-            // 更新月與年動態字串
             const formatCatSummary = (aggObj) => {
                 const arr = Object.entries(aggObj).sort((a,b) => b[1] - a[1]);
                 if(arr.length === 0) return '無資料';
@@ -1890,7 +1905,7 @@
                 const items = normalizeRecord(i);
                 
                 items.forEach(item => {
-                    let unit = item.category === '水塔' ? '口' : '台';
+                    let unit = item.category === '水塔' ? '口' : (item.category === '冷氣' || item.category === '洗衣機' ? '台' : '單位');
                     services.push(`${item.category}${item.qty}${unit}${item.title ? `：${item.title}` : ''}`);
                 });
 
@@ -1909,9 +1924,12 @@
                         <span>${i.bookingTime.replace('T',' ')}</span>
                         ${i.passFrom ? `<span class="text-indigo-500 font-bold flex items-center gap-1"><i data-lucide="forward" class="w-3 h-3"></i>PASS: ${i.passFrom}</span>` : '<span></span>'}
                     </td>
-                    <td data-label="客戶" class="px-6 py-4 flex items-center gap-2">
+                    <!-- 本次修正：排版無縫融入廠牌與車牌 -->
+                    <td data-label="客戶" class="px-6 py-4 flex flex-wrap items-center gap-2">
                         <span class="font-bold text-slate-900">${i.customerName}</span>
                         ${i.phone ? `<span class="text-[12px] text-slate-400 font-normal flex items-center gap-0.5"><i data-lucide="phone" class="w-3 h-3"></i>${i.phone}</span>` : ''}
+                        ${i.carBrand ? `<span class="text-[11px] font-bold bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded border border-slate-200 ml-1">${i.carBrand}</span>` : ''}
+                        ${i.licensePlate ? `<span class="text-[11px] font-bold bg-slate-700 text-white px-1.5 py-0.5 rounded shadow-sm tracking-wider">${i.licensePlate}</span>` : ''}
                     </td>
                     <td class="px-6 py-1 text-slate-500 text-xs flex items-center gap-1.5">
                         ${i.address ? `
@@ -1979,6 +1997,9 @@
             document.getElementById('customerName').value = r.customerName;
             document.getElementById('phone').value = r.phone || "";
             document.getElementById('address').value = r.address || "";
+            // 本次修正：編輯時正確帶入車子廠牌與車牌
+            document.getElementById('carBrand').value = r.carBrand || "";
+            document.getElementById('licensePlate').value = r.licensePlate || "";
             document.getElementById('totalAmount').value = r.totalAmount;
             document.getElementById('assistantPay').value = r.assistantPay;
             document.getElementById('note').value = r.note;
@@ -1998,6 +2019,7 @@
                 r.assistantDetail.split(',').forEach(s => { const [name, amt] = s.split(':'); addAssistantRow(name, amt); });
             }
             
+            updateQuickCategoryTags();
             updateQuickAssistantTags();
             updateQuickPassTags();
             calcFormNet();
