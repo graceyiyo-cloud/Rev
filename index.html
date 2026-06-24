@@ -825,10 +825,11 @@
             <div class="container mx-auto flex flex-col md:flex-row justify-between items-center gap-2 md:gap-0">
                 <div class="flex items-center gap-4 w-full md:w-auto justify-between md:justify-start">
                     <h1 class="text-lg font-bold tracking-widest" id="mainTitle">冷氣清洗紀錄</h1>
-                    <!-- 系統切換 Toggle -->
+                    <!-- 系統切換 Toggle (新增總計) -->
                     <div class="bg-slate-700/50 p-1 rounded-lg flex items-center text-xs font-bold border border-slate-500/30">
                         <button onclick="switchAppMode('ac')" id="navAcBtn" class="px-3 py-1 rounded bg-slate-500 text-white shadow-sm transition-all">冷氣</button>
                         <button onclick="switchAppMode('car')" id="navCarBtn" class="px-3 py-1 rounded text-slate-300 hover:text-white transition-all">汽車</button>
+                        <button onclick="switchAppMode('summary')" id="navSummaryBtn" class="px-3 py-1 rounded text-slate-300 hover:text-white transition-all">總計</button>
                     </div>
                 </div>
                 
@@ -1000,7 +1001,7 @@
                         <span>全</span><span>部</span><span>年</span><span>份</span><span>總</span><span>累</span><span>計</span>
                     </div>
                     <div class="flex-1">
-                        <div class="grid grid-cols-3 gap-2 text-center border-b border-white/10 pb-2 mb-2">
+                        <div id="allCountsGrid" class="grid grid-cols-3 gap-2 text-center border-b border-white/10 pb-2 mb-2">
                             <div><p class="text-[10px] text-white/65" id="statsLabel1">冷氣</p><p class="text-xl font-bold" id="allAc">0</p></div>
                             <div><p class="text-[10px] text-white/65" id="statsLabel2">洗衣機</p><p class="text-xl font-bold" id="allWm">0</p></div>
                             <div><p class="text-[10px] text-white/65" id="statsLabel3">水塔</p><p class="text-xl font-bold" id="allWt">0</p></div>
@@ -1022,6 +1023,35 @@
                     </div>
                 </div>
 
+                <!-- 採購預算區塊 (僅限汽車模式顯示) -->
+                <div id="carProcurementSection" class="hidden mb-4 stats-card bg-[#fffbeb] border-[#fde68a] border-t-[4px] shadow-sm p-4 rounded-3xl relative overflow-hidden">
+                    <div class="absolute -right-4 -top-4 opacity-10 pointer-events-none"><i data-lucide="shopping-bag" class="w-24 h-24 text-amber-500"></i></div>
+                    <div class="flex justify-between items-center mb-3 relative z-10">
+                        <h3 class="text-amber-800 text-[11px] font-bold uppercase tracking-widest flex items-center gap-1">
+                            <i data-lucide="shopping-cart" class="w-3.5 h-3.5"></i> 採購預算與實際收入 (汽車專屬)
+                        </h3>
+                        <button onclick="toggleProcurementModal()" class="text-[10px] bg-amber-500 hover:bg-amber-600 transition-colors text-white px-2.5 py-1.5 rounded-lg shadow-sm font-bold active:scale-95">管理明細</button>
+                    </div>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-2 relative z-10">
+                        <div class="bg-white/60 p-2 rounded-xl text-center border border-amber-200/50">
+                            <span class="block text-[10px] font-bold text-amber-700/70 mb-0.5">預算上限(10%)</span>
+                            <span class="block text-sm font-black text-amber-600" id="procBudget">$0</span>
+                        </div>
+                        <div class="bg-white/60 p-2 rounded-xl text-center border border-amber-200/50">
+                            <span class="block text-[10px] font-bold text-amber-700/70 mb-0.5">已採購金額</span>
+                            <span class="block text-sm font-black text-rose-500" id="procSpent">$0</span>
+                        </div>
+                        <div class="bg-white/60 p-2 rounded-xl text-center border border-amber-200/50">
+                            <span class="block text-[10px] font-bold text-amber-700/70 mb-0.5">剩餘預算</span>
+                            <span class="block text-sm font-black text-emerald-600" id="procRemain">$0</span>
+                        </div>
+                        <div class="bg-blue-50/80 p-2 rounded-xl text-center border border-blue-200/50 shadow-[inset_0_1px_0_rgba(255,255,255,1)]">
+                            <span class="block text-[10px] font-bold text-blue-700/70 mb-0.5">實際淨收入</span>
+                            <span class="block text-sm font-black text-blue-700" id="actualNet">$0</span>
+                        </div>
+                    </div>
+                </div>
+
                 <div id="assistantSummaryOverlay" onclick="toggleAssistantModal()" class="hidden fixed inset-0 bg-black/40 backdrop-blur-[2px] z-[90]"></div>
                 <div id="assistantSummaryModal" class="hidden bg-white rounded-2xl shadow-2xl p-5 border border-slate-200">
                     <div class="flex justify-between items-center mb-4 border-b pb-2">
@@ -1036,12 +1066,38 @@
                     </div>
                 </div>
 
+                <!-- 採購明細彈窗 Modal -->
+                <div id="procurementOverlay" onclick="toggleProcurementModal()" class="hidden fixed inset-0 bg-black/40 backdrop-blur-[2px] z-[90]"></div>
+                <div id="procurementModal" class="hidden fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-2xl shadow-2xl p-5 border border-slate-200 z-[100] w-[95%] max-w-md max-h-[90vh] overflow-y-auto">
+                    <div class="flex justify-between items-center mb-4 border-b pb-2">
+                        <h4 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                            <i data-lucide="shopping-cart" class="w-4 h-4 text-amber-500"></i> 採購明細管理
+                        </h4>
+                        <button onclick="toggleProcurementModal()" class="text-slate-400 text-xl hover:text-slate-600">&times;</button>
+                    </div>
+
+                    <form id="procForm" onsubmit="addProcurement(event)" class="bg-amber-50/50 p-3 rounded-xl border border-amber-100 mb-4 shadow-sm">
+                        <div class="grid grid-cols-2 gap-2 mb-2">
+                            <div><label class="text-[10px] font-bold text-amber-700/70">日期</label><input type="date" id="procDate" required class="w-full text-sm p-1.5 border border-amber-200 rounded outline-none focus:ring-1 focus:ring-amber-400"></div>
+                            <div><label class="text-[10px] font-bold text-amber-700/70">品項</label><input type="text" id="procItem" required placeholder="如：洗車精" class="w-full text-sm p-1.5 border border-amber-200 rounded outline-none focus:ring-1 focus:ring-amber-400"></div>
+                        </div>
+                        <div class="grid grid-cols-3 gap-2 mb-3">
+                            <div><label class="text-[10px] font-bold text-amber-700/70">數量</label><input type="number" id="procQty" required min="1" value="1" class="w-full text-sm p-1.5 border border-amber-200 rounded outline-none focus:ring-1 focus:ring-amber-400" oninput="calcProcAmount()"></div>
+                            <div><label class="text-[10px] font-bold text-amber-700/70">單價</label><input type="number" id="procPrice" required min="0" class="w-full text-sm p-1.5 border border-amber-200 rounded outline-none focus:ring-1 focus:ring-amber-400" oninput="calcProcAmount()"></div>
+                            <div><label class="text-[10px] font-bold text-amber-700/70">總金額</label><input type="number" id="procAmount" readonly class="w-full text-sm p-1.5 border border-amber-200 rounded bg-white font-bold text-rose-500 outline-none"></div>
+                        </div>
+                        <button type="submit" class="w-full bg-amber-500 text-white font-bold py-2 rounded-lg text-sm shadow-sm active:scale-95 transition-transform">新增採購明細</button>
+                    </form>
+
+                    <div id="procList" class="space-y-2"></div>
+                </div>
+
                 <div class="space-y-3 mb-4">
                     <div class="stats-card stats-card-year p-5">
                         <div>
                             <div class="flex justify-between items-start">
                                 <h3 class="text-slate-500 text-[10px] font-bold uppercase tracking-widest" id="yearTitle">年度統計</h3>
-                                <div class="text-[10px] text-slate-400">年度數量: <span class="text-slate-700 font-bold" id="yCounts">冷0 / 洗0 / 水0</span></div>
+                                <div id="yCountsGroup" class="text-[10px] text-slate-400">年度數量: <span class="text-slate-700 font-bold" id="yCounts">冷0 / 洗0 / 水0</span></div>
                             </div>
                             <div class="metric-box-grid mt-3">
                                 <div class="metric-box metric-box-rev">
@@ -1079,7 +1135,7 @@
                         <div>
                             <div class="filter-summary-head flex justify-between items-start">
                                 <h3 class="text-emerald-600 text-[10px] font-bold uppercase tracking-widest" id="monthTitle">本月統計</h3>
-                                <div class="filter-count-line text-[10px] text-emerald-700/70"><span id="mCountsLabel">月度數量</span>: <span class="text-emerald-800 font-bold" id="mCounts">冷0 / 洗0 / 水0</span></div>
+                                <div id="mCountsGroup" class="filter-count-line text-[10px] text-emerald-700/70"><span id="mCountsLabel">月度數量</span>: <span class="text-emerald-800 font-bold" id="mCounts">冷0 / 洗0 / 水0</span></div>
                             </div>
                             <div class="metric-box-grid mt-3">
                                 <div class="metric-box metric-box-rev">
@@ -1223,10 +1279,17 @@
         const auth = getAuth(app);
         const provider = new GoogleAuthProvider();
         
-        // 雙模式全域變數
-        let currentAppMode = 'ac'; // 'ac' = 冷氣清洗, 'car' = 汽車清洗
+        // 雙模式全域變數 (新增 'summary')
+        let currentAppMode = 'ac'; // 'ac' = 冷氣清洗, 'car' = 汽車清洗, 'summary' = 總計營收
 
-        // 動態資料庫綁定
+        // 動態資料庫綁定與多重訂閱管理
+        let unsubAc = null;
+        let unsubCar = null;
+        let unsubProc = null;
+        let dataAc = [];
+        let dataCar = [];
+        let dataProc = [];
+
         const getRecordsCol = () => {
             let baseName = currentAppMode === 'car' ? 'carRecords' : 'cleaningRecords';
             if (allowedEmails.includes(auth.currentUser.email.toLowerCase())) {
@@ -1248,7 +1311,6 @@
         let editingId = null;
         let knownAssistantNames = []; 
         let knownPassNames = [];
-        let snapshotUnsubscribe = null;
 
         let currentYearRecords = [];
         let currentMonthRecords = [];
@@ -1267,23 +1329,43 @@
             lucide.createIcons();
         });
 
-        // 模式切換邏輯
+        // 模式切換邏輯 (含 Summary 支援)
         window.switchAppMode = (mode) => {
             if (currentAppMode === mode) return;
             currentAppMode = mode;
 
-            // 1. 更新導航列按鈕樣式與大標題
-            document.getElementById('navAcBtn').className = mode === 'ac' ? 'px-3 py-1 rounded bg-slate-500 text-white shadow-sm transition-all' : 'px-3 py-1 rounded text-slate-300 hover:text-white transition-all';
-            document.getElementById('navCarBtn').className = mode === 'car' ? 'px-3 py-1 rounded bg-slate-500 text-white shadow-sm transition-all' : 'px-3 py-1 rounded text-slate-300 hover:text-white transition-all';
-            document.getElementById('mainTitle').innerText = mode === 'ac' ? '冷氣清洗紀錄' : '汽車清洗紀錄';
-            document.title = mode === 'ac' ? '冷氣清洗紀錄' : '汽車清洗紀錄';
+            const btnClasses = 'px-3 py-1 rounded bg-slate-500 text-white shadow-sm transition-all';
+            const btnClassesOff = 'px-3 py-1 rounded text-slate-300 hover:text-white transition-all';
 
-            // 2. 更新表單顯示區塊
+            // 1. 更新導航列按鈕樣式與大標題
+            document.getElementById('navAcBtn').className = mode === 'ac' ? btnClasses : btnClassesOff;
+            document.getElementById('navCarBtn').className = mode === 'car' ? btnClasses : btnClassesOff;
+            document.getElementById('navSummaryBtn').className = mode === 'summary' ? btnClasses : btnClassesOff;
+
+            const titles = { ac: '冷氣清洗紀錄', car: '汽車清洗紀錄', summary: '總計營收' };
+            document.getElementById('mainTitle').innerText = titles[mode];
+            document.title = titles[mode];
+
+            // 2. 更新表單與特殊區塊顯示
             document.getElementById('carBasicInfoWrap').classList.toggle('hidden', mode !== 'car');
             document.getElementById('acDetailWrap').classList.toggle('hidden', mode !== 'ac');
             document.getElementById('carDetailWrap').classList.toggle('hidden', mode !== 'car');
+            document.getElementById('carProcurementSection').classList.toggle('hidden', mode !== 'car');
 
-            // 3. 更新統計卡片與篩選按鈕
+            // 總計模式專屬版面控制：隱藏填寫按鈕、數量文字、篩選器與清單明細
+            const isSummary = mode === 'summary';
+            document.querySelectorAll('.btn-icon').forEach(el => {
+                if(el.parentElement.innerText.includes('填寫')) el.parentElement.classList.toggle('hidden', isSummary);
+            });
+            if(isSummary) showPage('listPage');
+            
+            document.getElementById('allCountsGrid').classList.toggle('hidden', isSummary);
+            document.getElementById('yCountsGroup').classList.toggle('hidden', isSummary);
+            document.getElementById('mCountsGroup').classList.toggle('hidden', isSummary);
+            document.getElementById('filterShell').classList.toggle('hidden', isSummary);
+            document.querySelector('.overflow-x-auto').classList.toggle('hidden', isSummary);
+
+            // 3. 更新篩選按鈕 (總計模式不顯示篩選區，故保留舊態即可)
             if (mode === 'ac') {
                 document.getElementById('statsLabel1').innerText = '冷氣';
                 document.getElementById('statsLabel2').innerText = '洗衣機';
@@ -1294,7 +1376,7 @@
                     <button type="button" onclick="setTypeFilter('wm', this)" class="type-btn flex-1 rounded-lg text-[10px] font-bold transition-all text-slate-400">洗衣機</button>
                     <button type="button" onclick="setTypeFilter('wt', this)" class="type-btn flex-1 rounded-lg text-[10px] font-bold transition-all text-slate-400">水塔</button>
                 `;
-            } else {
+            } else if (mode === 'car') {
                 document.getElementById('statsLabel1').innerText = '轎車';
                 document.getElementById('statsLabel2').innerText = '休旅車';
                 document.getElementById('statsLabel3').innerText = '7人座';
@@ -1312,16 +1394,13 @@
             document.getElementById('searchKeyword').value = "";
 
             // 5. 切換資料庫連線
-            if (snapshotUnsubscribe) {
-                snapshotUnsubscribe();
-                snapshotUnsubscribe = null;
-            }
             document.getElementById('recordList').innerHTML = ''; // 清空畫面
+            dataAc = []; dataCar = []; dataProc = [];
             allRecords = [];
             startDataSubscription();
 
-            // 如果在表單頁，重置表單
-            if (!document.getElementById('formPage').classList.contains('hidden')) {
+            // 如果在表單頁且非總計模式，重置表單
+            if (!document.getElementById('formPage').classList.contains('hidden') && !isSummary) {
                 prepareNewForm();
             }
         };
@@ -1335,10 +1414,9 @@
             } else {
                 document.getElementById('authPage').classList.remove('hidden');
                 document.getElementById('mainApp').classList.add('hidden');
-                if (snapshotUnsubscribe) {
-                    snapshotUnsubscribe();
-                    snapshotUnsubscribe = null;
-                }
+                if (unsubAc) { unsubAc(); unsubAc = null; }
+                if (unsubCar) { unsubCar(); unsubCar = null; }
+                if (unsubProc) { unsubProc(); unsubProc = null; }
             }
             lucide.createIcons();
         });
@@ -1361,13 +1439,56 @@
             }
         };
 
+        // 並行訂閱控制中心
         function startDataSubscription() {
-            if (snapshotUnsubscribe) return;
-            snapshotUnsubscribe = onSnapshot(getRecordsCol(), (snap) => {
-                allRecords = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-                updateDatalists();
-                filterRecords();
-            });
+            if (unsubAc) { unsubAc(); unsubAc = null; }
+            if (unsubCar) { unsubCar(); unsubCar = null; }
+            if (unsubProc) { unsubProc(); unsubProc = null; }
+
+            const getCol = (type) => {
+                let baseName = type === 'car' ? 'carRecords' : (type === 'ac' ? 'cleaningRecords' : 'carProcurementRecords');
+                if (allowedEmails.includes(auth.currentUser.email.toLowerCase())) {
+                    return collection(db, baseName);
+                } else {
+                    return collection(db, baseName + "_" + auth.currentUser.uid);
+                }
+            };
+
+            // 冷氣模式 或 總計模式
+            if (currentAppMode === 'ac' || currentAppMode === 'summary') {
+                unsubAc = onSnapshot(getCol('ac'), snap => {
+                    dataAc = snap.docs.map(d => ({ id: d.id, _type: 'ac', ...d.data() }));
+                    combineAndFilter();
+                });
+            }
+            // 汽車模式 或 總計模式
+            if (currentAppMode === 'car' || currentAppMode === 'summary') {
+                unsubCar = onSnapshot(getCol('car'), snap => {
+                    dataCar = snap.docs.map(d => ({ id: d.id, _type: 'car', ...d.data() }));
+                    combineAndFilter();
+                });
+            }
+            // 汽車模式專屬：採購紀錄
+            if (currentAppMode === 'car') {
+                unsubProc = onSnapshot(getCol('proc'), snap => {
+                    dataProc = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                    combineAndFilter();
+                });
+            }
+        }
+
+        // 整合資料並觸發過濾
+        function combineAndFilter() {
+            if (currentAppMode === 'ac') allRecords = [...dataAc];
+            else if (currentAppMode === 'car') allRecords = [...dataCar];
+            else if (currentAppMode === 'summary') allRecords = [...dataAc, ...dataCar];
+
+            if (!document.getElementById('procurementModal')?.classList.contains('hidden')) {
+                renderProcList();
+            }
+
+            updateDatalists();
+            filterRecords();
         }
 
         const todayForFilter = new Date();
@@ -1410,6 +1531,83 @@
             updateQuickPassTags();
             showPage('formPage');
         };
+
+        // ====== 汽車採購預算管理專屬邏輯 ======
+        window.toggleProcurementModal = () => {
+            const modal = document.getElementById('procurementModal');
+            const overlay = document.getElementById('procurementOverlay');
+            if (modal.classList.contains('hidden')) {
+                document.getElementById('procDate').value = formatLocalDate(new Date());
+                renderProcList();
+                modal.classList.remove('hidden');
+                overlay.classList.remove('hidden');
+            } else {
+                modal.classList.add('hidden');
+                overlay.classList.add('hidden');
+            }
+            lucide.createIcons();
+        };
+
+        window.calcProcAmount = () => {
+            const qty = parseInt(document.getElementById('procQty').value) || 0;
+            const price = parseInt(document.getElementById('procPrice').value) || 0;
+            document.getElementById('procAmount').value = qty * price;
+        };
+
+        window.addProcurement = async (e) => {
+            e.preventDefault();
+            const docData = {
+                date: document.getElementById('procDate').value,
+                item: document.getElementById('procItem').value,
+                qty: parseInt(document.getElementById('procQty').value) || 0,
+                price: parseInt(document.getElementById('procPrice').value) || 0,
+                amount: parseInt(document.getElementById('procAmount').value) || 0,
+                createdAt: new Date().toISOString()
+            };
+            try {
+                let baseName = 'carProcurementRecords';
+                if (!allowedEmails.includes(auth.currentUser.email.toLowerCase())) {
+                    baseName += "_" + auth.currentUser.uid;
+                }
+                await addDoc(collection(db, baseName), docData);
+                document.getElementById('procForm').reset();
+                document.getElementById('procDate').value = formatLocalDate(new Date());
+            } catch (err) { alert('新增失敗'); }
+        };
+
+        window.deleteProcurement = async (id) => {
+            if(!confirm('確定要刪除此採購明細？')) return;
+            try {
+                let baseName = 'carProcurementRecords';
+                if (!allowedEmails.includes(auth.currentUser.email.toLowerCase())) {
+                    baseName += "_" + auth.currentUser.uid;
+                }
+                await deleteDoc(doc(db, baseName, id));
+            } catch (err) { alert('刪除失敗'); }
+        };
+
+        function renderProcList() {
+            const list = document.getElementById('procList');
+            if (dataProc.length === 0) {
+                list.innerHTML = '<p class="text-center text-slate-400 py-4 text-sm">尚無採購紀錄</p>';
+                return;
+            }
+            const sorted = [...dataProc].sort((a,b) => b.date.localeCompare(a.date));
+            list.innerHTML = sorted.map(p => `
+                <div class="flex justify-between items-center bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                    <div class="flex-1 min-w-0">
+                        <div class="text-[10px] text-slate-400">${p.date}</div>
+                        <div class="font-bold text-slate-700 text-sm truncate">${p.item} <span class="text-xs font-normal text-slate-500 ml-1">${p.qty}x$${p.price}</span></div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <span class="font-black text-rose-500">$${(p.amount||0).toLocaleString()}</span>
+                        <button onclick="deleteProcurement('${p.id}')" class="text-rose-400 p-1 hover:bg-rose-100 rounded transition-colors"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
+                    </div>
+                </div>
+            `).join('');
+            lucide.createIcons();
+        }
+
 
         // ====== 汽車表單專屬邏輯 ======
         window.toggleCarPriceInput = (idx) => {
@@ -1862,7 +2060,7 @@
             const getSearchText = (record) => {
                 // 根據模式搜尋不同欄位
                 let raw = "";
-                if (currentAppMode === 'ac') {
+                if (record._type === 'ac' || (!record._type && currentAppMode === 'ac')) {
                     raw = `${record.customerName || ''} ${record.phone || ''} ${record.address || ''} ${record.acBrand || ''} ${record.assistantDetail || ''} ${record.passFrom || ''} ${record.note || ''}`.toLowerCase();
                 } else {
                     raw = `${record.customerName || ''} ${record.phone || ''} ${record.address || ''} ${record.carBrand || ''} ${record.carModel || ''} ${record.licensePlate || ''} ${record.carType || ''} ${record.carServices || ''} ${record.assistantDetail || ''} ${record.passFrom || ''} ${record.note || ''}`.toLowerCase();
@@ -1878,7 +2076,7 @@
                 });
             };
             const getQty = (record) => {
-                if (currentAppMode === 'ac') return (parseInt(record.acCount) || 0) + (parseInt(record.wmCount) || 0) + (parseInt(record.wtCount) || 0);
+                if (record._type === 'ac' || (!record._type && currentAppMode === 'ac')) return (parseInt(record.acCount) || 0) + (parseInt(record.wmCount) || 0) + (parseInt(record.wtCount) || 0);
                 return 1; // 汽車一筆算 1 台
             };
             const addPassSummary = (target, record) => {
@@ -1896,7 +2094,7 @@
                 const matchEnd = !endDate || (recordDate && recordDate <= endDate);
                 
                 let matchType = false;
-                if (currentAppMode === 'ac') {
+                if (currentAppMode === 'ac' || i._type === 'ac') {
                     matchType = (type === 'all' || (type === 'ac' && (parseInt(i.acCount) || 0) > 0) || (type === 'wm' && (parseInt(i.wmCount) || 0) > 0) || (type === 'wt' && (parseInt(i.wtCount) || 0) > 0));
                 } else {
                     matchType = (type === 'all' || i.carType === type);
@@ -1911,7 +2109,7 @@
                 const exp = parseInt(r.assistantPay) || 0;
                 let ac = 0, wm = 0, wt = 0;
                 
-                if (currentAppMode === 'ac') {
+                if (r._type === 'ac' || (!r._type && currentAppMode === 'ac')) {
                     ac = parseInt(r.acCount) || 0;
                     wm = parseInt(r.wmCount) || 0;
                     wt = parseInt(r.wtCount) || 0;
@@ -1943,7 +2141,7 @@
                 const exp = parseInt(r.assistantPay) || 0;
                 let ac = 0, wm = 0, wt = 0;
                 
-                if (currentAppMode === 'ac') {
+                if (r._type === 'ac' || (!r._type && currentAppMode === 'ac')) {
                     ac = parseInt(r.acCount) || 0;
                     wm = parseInt(r.wmCount) || 0;
                     wt = parseInt(r.wtCount) || 0;
@@ -1956,6 +2154,22 @@
                 fRev += rev; fExp += exp; fAc += ac; fWm += wm; fWt += wt;
                 addPassSummary(fPassSummary, r);
             });
+
+            // ===== 汽車採購預算計算與呈現 ======
+            if (currentAppMode === 'car') {
+                let procTotal = 0;
+                dataProc.forEach(p => {
+                    procTotal += (parseInt(p.amount) || 0);
+                });
+                const budget = Math.floor(aRev * 0.1);
+                const remain = budget - procTotal;
+                const actualNet = (aRev - aExp) - procTotal;
+
+                document.getElementById('procBudget').innerText = `$${budget.toLocaleString()}`;
+                document.getElementById('procSpent').innerText = `$${procTotal.toLocaleString()}`;
+                document.getElementById('procRemain').innerText = `$${remain.toLocaleString()}`;
+                document.getElementById('actualNet').innerText = `$${actualNet.toLocaleString()}`;
+            }
 
             const floatingWrap = document.getElementById('floatingUnpaidWrap');
             const floatingUnpaidBadgeCount = document.getElementById('unpaidCountBadge');
@@ -2017,7 +2231,7 @@
                                 <span class="pass-avatar">${k.substring(0, 1)}</span>
                                 <span class="pass-name">${k}</span>
                             </div>
-                            <span class="pass-qty">${summary[k].qty} ${currentAppMode === 'ac' ? '台' : '輛'}</span>
+                            <span class="pass-qty">${summary[k].qty} 輛/台</span>
                         </div>
                         <div class="pass-metrics">
                             <div class="pass-metric">
@@ -2068,7 +2282,7 @@
             list.innerHTML = data.map(i => {
                 let services = [];
                 
-                if (currentAppMode === 'ac') {
+                if (i._type === 'ac' || (!i._type && currentAppMode === 'ac')) {
                     const acTitle = `冷氣${i.acCount}台`;
                     if(i.acCount > 0) services.push(i.acBrand ? `${acTitle}：${i.acBrand}` : acTitle);
                     if(i.wmCount > 0) services.push(`洗衣機${i.wmCount}台`);
@@ -2102,7 +2316,7 @@
                 return `
                 <tr id="rec-${i.id}" class="${isComp ? 'completed-row' : ''}">
                     <td data-label="預約時間" class="px-6 py-4 time-display flex justify-between items-center">
-                        <span>${i.bookingTime.replace('T',' ')}</span>
+                        <span>${i.bookingTime.replace('T',' ')} ${i._type === 'car' ? '<span class="text-blue-500 text-[10px] ml-1">[汽車]</span>' : (i._type === 'ac' ? '<span class="text-emerald-500 text-[10px] ml-1">[冷氣]</span>' : '')}</span>
                         ${i.passFrom ? `<span class="text-indigo-500 font-bold flex items-center gap-1"><i data-lucide="forward" class="w-3 h-3"></i>PASS: ${i.passFrom}</span>` : '<span></span>'}
                     </td>
                     <td data-label="客戶" class="px-6 py-4 flex items-center gap-2">
@@ -2118,7 +2332,7 @@
                         ` : ''}
                     </td>
                     <td data-label="服務明細" class="px-6 py-2 text-slate-600">
-                        <div class="leading-tight">${currentAppMode==='car' ? services.join('') : services.join('、')}</div>
+                        <div class="leading-tight">${(i._type === 'car' || (!i._type && currentAppMode === 'car')) ? services.join('') : services.join('、')}</div>
                         ${i.note ? `<div class="text-[11px] text-slate-400 note-display mt-0.5">備註: ${i.note}</div>` : ''}
                         ${asDisplay ? `<div class="text-[11px] text-rose-500 font-medium mt-0.5">${asDisplay}</div>` : ''}
                     </td>
@@ -2180,7 +2394,7 @@
             document.getElementById('note').value = r.note;
             document.getElementById('passFrom').value = r.passFrom || "";
             
-            if (currentAppMode === 'ac') {
+            if (r._type === 'ac' || (!r._type && currentAppMode === 'ac')) {
                 document.getElementById('acCount').value = r.acCount;
                 document.getElementById('wmCount').value = r.wmCount;
                 document.getElementById('wtCount').value = r.wtCount;
@@ -2388,7 +2602,7 @@
                     const url = URL.createObjectURL(blob);
                     const link = document.createElement('a');
                     link.href = url;
-                    const prefix = currentAppMode === 'ac' ? '冷氣' : '汽車';
+                    const prefix = (currentAppMode === 'ac' || currentAppMode === 'summary') ? '冷氣' : '汽車';
                     link.download = `${prefix}紀錄_${name}_${id.substring(0,4)}.png`;
                     
                     document.body.appendChild(link);
