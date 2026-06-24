@@ -876,10 +876,14 @@
                     </div>
                     
                     <!-- 汽車模式專屬：基本資料 -->
-                    <div id="carBasicInfoWrap" class="hidden grid grid-cols-1 md:grid-cols-2 gap-4 bg-blue-50/20 p-4 rounded-xl border border-blue-100/50">
+                    <div id="carBasicInfoWrap" class="hidden grid grid-cols-1 md:grid-cols-3 gap-4 bg-blue-50/20 p-4 rounded-xl border border-blue-100/50">
                         <div>
                             <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">廠牌</label>
                             <input type="text" id="carBrand" placeholder="例：Toyota" class="block w-full border-slate-200 rounded-xl p-3 border text-sm outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">汽車型號</label>
+                            <input type="text" id="carModel" placeholder="例：Altis" class="block w-full border-slate-200 rounded-xl p-3 border text-sm outline-none">
                         </div>
                         <div>
                             <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">車牌號碼</label>
@@ -1393,6 +1397,7 @@
             document.getElementById('formNetProfit').value = '$0';
             
             // 重置汽車特有欄位
+            document.getElementById('carModel').value = '';
             for (let i = 1; i <= 5; i++) {
                 document.getElementById(`carPrice_${i}`).classList.add('hidden');
                 document.getElementById(`carPrice_${i}`).value = '';
@@ -1582,6 +1587,7 @@
                 record.acBrand = acDetailsArray.join('+');
             } else {
                 record.carBrand = document.getElementById('carBrand').value.trim();
+                record.carModel = document.getElementById('carModel').value.trim();
                 record.licensePlate = document.getElementById('licensePlate').value.trim();
                 record.carType = document.getElementById('carType').value;
                 
@@ -1859,7 +1865,7 @@
                 if (currentAppMode === 'ac') {
                     raw = `${record.customerName || ''} ${record.phone || ''} ${record.address || ''} ${record.acBrand || ''} ${record.assistantDetail || ''} ${record.passFrom || ''} ${record.note || ''}`.toLowerCase();
                 } else {
-                    raw = `${record.customerName || ''} ${record.phone || ''} ${record.address || ''} ${record.carBrand || ''} ${record.licensePlate || ''} ${record.carType || ''} ${record.carServices || ''} ${record.assistantDetail || ''} ${record.passFrom || ''} ${record.note || ''}`.toLowerCase();
+                    raw = `${record.customerName || ''} ${record.phone || ''} ${record.address || ''} ${record.carBrand || ''} ${record.carModel || ''} ${record.licensePlate || ''} ${record.carType || ''} ${record.carServices || ''} ${record.assistantDetail || ''} ${record.passFrom || ''} ${record.note || ''}`.toLowerCase();
                 }
                 return { raw, compact: normalizeSearchText(raw) };
             };
@@ -2070,9 +2076,17 @@
                 } else {
                     const plateDisplay = i.licensePlate ? `(${i.licensePlate})` : '';
                     const brandDisplay = i.carBrand ? `${i.carBrand} ` : '';
-                    services.push(`<span class="font-bold text-blue-700">${brandDisplay}${i.carType} ${plateDisplay}</span>`);
+                    const modelDisplay = i.carModel ? `${i.carModel} ` : '';
+                    services.push(`<div class="font-bold text-blue-700 pb-1 mb-1 border-b border-slate-100">${brandDisplay}${modelDisplay}${i.carType} ${plateDisplay}</div>`);
+                    
                     if(i.carServices) {
-                        services.push(i.carServices.replace(/\+/g, '、'));
+                        const svcItems = i.carServices.split('+').map(svc => {
+                            const parts = svc.split('*');
+                            const name = parts[0];
+                            const price = parts[1] || '';
+                            return `<div class="flex justify-between items-center text-[0.85rem] border-b border-slate-100 border-dashed py-1.5 last:border-0"><span class="text-slate-600">${name}</span><span class="text-slate-700 font-bold">${price}</span></div>`;
+                        }).join('');
+                        services.push(`<div>${svcItems}</div>`);
                     }
                 }
 
@@ -2104,7 +2118,7 @@
                         ` : ''}
                     </td>
                     <td data-label="服務明細" class="px-6 py-2 text-slate-600">
-                        <div class="leading-tight">${currentAppMode==='car' ? services.join('<br>') : services.join('、')}</div>
+                        <div class="leading-tight">${currentAppMode==='car' ? services.join('') : services.join('、')}</div>
                         ${i.note ? `<div class="text-[11px] text-slate-400 note-display mt-0.5">備註: ${i.note}</div>` : ''}
                         ${asDisplay ? `<div class="text-[11px] text-rose-500 font-medium mt-0.5">${asDisplay}</div>` : ''}
                     </td>
@@ -2186,6 +2200,7 @@
                 toggleAcBrand();
             } else {
                 document.getElementById('carBrand').value = r.carBrand || '';
+                document.getElementById('carModel').value = r.carModel || '';
                 document.getElementById('licensePlate').value = r.licensePlate || '';
                 document.getElementById('carType').value = r.carType || '轎車';
                 
