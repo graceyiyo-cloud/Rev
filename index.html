@@ -1292,7 +1292,7 @@
 
         const getRecordsCol = () => {
             let baseName = currentAppMode === 'car' ? 'carRecords' : 'cleaningRecords';
-            if (allowedEmails.includes(auth.currentUser.email.toLowerCase())) {
+            if (allowedEmails.includes((auth.currentUser?.email || '').toLowerCase())) {
                 return collection(db, baseName);
             } else {
                 return collection(db, baseName + "_" + auth.currentUser.uid);
@@ -1300,7 +1300,7 @@
         };
         const getRecordDoc = (id) => {
             let baseName = currentAppMode === 'car' ? 'carRecords' : 'cleaningRecords';
-            if (allowedEmails.includes(auth.currentUser.email.toLowerCase())) {
+            if (allowedEmails.includes((auth.currentUser?.email || '').toLowerCase())) {
                 return doc(db, baseName, id);
             } else {
                 return doc(db, baseName + "_" + auth.currentUser.uid, id);
@@ -1449,7 +1449,7 @@
 
             const getCol = (type) => {
                 let baseName = type === 'car' ? 'carRecords' : (type === 'ac' ? 'cleaningRecords' : 'carProcurementRecords');
-                if (allowedEmails.includes(auth.currentUser.email.toLowerCase())) {
+                if (allowedEmails.includes((auth.currentUser?.email || '').toLowerCase())) {
                     return collection(db, baseName);
                 } else {
                     return collection(db, baseName + "_" + auth.currentUser.uid);
@@ -1568,24 +1568,30 @@
             };
             try {
                 let baseName = 'carProcurementRecords';
-                if (!allowedEmails.includes(auth.currentUser.email.toLowerCase())) {
+                if (!allowedEmails.includes((auth.currentUser?.email || '').toLowerCase())) {
                     baseName += "_" + auth.currentUser.uid;
                 }
                 await addDoc(collection(db, baseName), docData);
                 document.getElementById('procForm').reset();
                 document.getElementById('procDate').value = formatLocalDate(new Date());
-            } catch (err) { alert('新增失敗'); }
+            } catch (err) { 
+                alert('新增失敗：' + err.message + '\n\n(提示：若是權限錯誤，請至 Firebase Console 新增 carProcurementRecords 集合的安全性規則)'); 
+                console.error('Procurement Add Error:', err); 
+            }
         };
 
         window.deleteProcurement = async (id) => {
             if(!confirm('確定要刪除此採購明細？')) return;
             try {
                 let baseName = 'carProcurementRecords';
-                if (!allowedEmails.includes(auth.currentUser.email.toLowerCase())) {
+                if (!allowedEmails.includes((auth.currentUser?.email || '').toLowerCase())) {
                     baseName += "_" + auth.currentUser.uid;
                 }
                 await deleteDoc(doc(db, baseName, id));
-            } catch (err) { alert('刪除失敗'); }
+            } catch (err) { 
+                alert('刪除失敗：' + err.message); 
+                console.error('Procurement Delete Error:', err); 
+            }
         };
 
         function renderProcList() {
