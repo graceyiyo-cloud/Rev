@@ -7,22 +7,18 @@
 
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="清洗紀錄">
+    <meta name="apple-mobile-web-app-title" content="冷氣紀錄">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#475569">
 
     <link rel="apple-touch-icon" href="./icon.png">
     
-    <link rel="manifest" href='data:application/manifest+json,{"name":"冷氣清洗紀錄","short_name":"清洗紀錄","start_url":".","display":"standalone","background_color":"#ffffff","theme_color":"#475569","icons":[{"src":"./icon.png","sizes":"512x512","type":"image/png"}]}'>
+    <link rel="manifest" href='data:application/manifest+json,{"name":"冷氣清洗紀錄","short_name":"冷紀錄","start_url":".","display":"standalone","background_color":"#ffffff","theme_color":"#475569","icons":[{"src":"./icon.png","sizes":"512x512","type":"image/png"}]}'>
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
-        /* 隱藏橫向捲軸以維持篩選列整潔 */
-        .scrollbar-hide::-webkit-scrollbar { display: none; }
-        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-
         /* 整體字體加大約 10% */
         html { font-size: 110%; }
         body { 
@@ -787,6 +783,23 @@
                 margin-bottom: 0.75rem !important;
             }
         }
+        
+        /* 汽車模式專屬美化 */
+        .car-svc-label {
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #334155;
+        }
+        .car-svc-checkbox {
+            accent-color: #3b82f6;
+            width: 1.1rem;
+            height: 1.1rem;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body class="bg-[#faf9f6] min-h-screen text-slate-700">
@@ -797,7 +810,7 @@
                 <i data-lucide="lock" class="text-white w-8 h-8"></i>
             </div>
             <h2 class="text-2xl font-bold text-slate-800 mb-2">系統登入</h2>
-            <p class="text-slate-400 text-sm mb-8">請使用 Google 帳號進行登入</p>
+            <p class="text-slate-400 text-sm mb-8">請使用授權的 Google 帳號進行登入</p>
             
             <button onclick="handleLogin()" class="w-full flex items-center justify-center gap-3 bg-white hover:bg-slate-50 text-slate-700 font-bold py-3.5 px-4 rounded-xl border border-slate-200 shadow-sm transition-all active:scale-95 mb-4">
                 <img src="https://www.gstatic.com/images/branding/googleg/1x/googleg_standard_color_128dp.png" class="w-5 h-5">
@@ -808,17 +821,18 @@
     </section>
 
     <div id="mainApp" class="hidden">
-        <!-- 本次修正：頂部導航列新增全域模式切換，且兼顧手機版排版 -->
-        <nav class="bg-slate-600 text-white py-2 px-2 md:px-4 shadow-md">
-            <div class="container mx-auto flex flex-col md:flex-row justify-between items-center gap-2">
-                <div class="flex w-full md:w-auto justify-between md:justify-start items-center gap-3">
-                    <h1 class="text-base md:text-lg font-bold tracking-widest whitespace-nowrap">清洗紀錄</h1>
-                    <div class="flex bg-slate-700/50 rounded-lg p-0.5 border border-slate-500/50">
-                        <button onclick="setGlobalMode('ac')" id="navModeAc" class="px-3 py-1 text-[11px] md:text-xs font-bold rounded-md bg-slate-500 text-white shadow-sm transition-all whitespace-nowrap">冷氣清洗</button>
-                        <button onclick="setGlobalMode('car')" id="navModeCar" class="px-3 py-1 text-[11px] md:text-xs font-bold rounded-md text-slate-400 hover:text-white transition-all whitespace-nowrap">汽車美容</button>
+        <nav class="bg-slate-600 text-white py-2 px-4 shadow-md">
+            <div class="container mx-auto flex flex-col md:flex-row justify-between items-center gap-2 md:gap-0">
+                <div class="flex items-center gap-4 w-full md:w-auto justify-between md:justify-start">
+                    <h1 class="text-lg font-bold tracking-widest" id="mainTitle">冷氣清洗紀錄</h1>
+                    <!-- 系統切換 Toggle -->
+                    <div class="bg-slate-700/50 p-1 rounded-lg flex items-center text-xs font-bold border border-slate-500/30">
+                        <button onclick="switchAppMode('ac')" id="navAcBtn" class="px-3 py-1 rounded bg-slate-500 text-white shadow-sm transition-all">冷氣</button>
+                        <button onclick="switchAppMode('car')" id="navCarBtn" class="px-3 py-1 rounded text-slate-300 hover:text-white transition-all">汽車</button>
                     </div>
                 </div>
-                <div class="flex w-full md:w-auto justify-end space-x-1 md:space-x-2">
+                
+                <div class="flex space-x-2 w-full md:w-auto justify-end">
                     <button onclick="showPage('listPage')" class="flex items-center px-3 py-1.5 bg-slate-500 hover:bg-slate-400 border border-slate-400/50 rounded-lg transition-all text-[0.8rem] font-medium active:scale-95 whitespace-nowrap">
                         <i data-lucide="list" class="btn-icon"></i>清單
                     </button>
@@ -839,65 +853,105 @@
                     <i data-lucide="clipboard-list" class="w-6 h-6"></i> 新增紀錄
                 </h2>
                 <form id="recordForm" class="space-y-4">
+                    <!-- 共用基本資料 -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">預約日期時間</label>
-                            <input type="datetime-local" id="bookingTime" required class="block w-full border-slate-200 rounded-xl p-3 border text-sm outline-none focus:ring-2 focus:ring-emerald-500/20">
+                            <input type="datetime-local" id="bookingTime" required class="block w-full border-slate-200 rounded-xl p-3 border text-sm outline-none">
                         </div>
                         <div>
                             <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">客戶姓名</label>
-                            <input type="text" id="customerName" required class="block w-full border-slate-200 rounded-xl p-3 border text-sm outline-none focus:ring-2 focus:ring-emerald-500/20">
+                            <input type="text" id="customerName" required class="block w-full border-slate-200 rounded-xl p-3 border text-sm outline-none">
                         </div>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">連絡電話</label>
-                            <input type="tel" id="phone" class="block w-full border-slate-200 rounded-xl p-3 border text-sm outline-none focus:ring-2 focus:ring-emerald-500/20">
+                            <input type="tel" id="phone" class="block w-full border-slate-200 rounded-xl p-3 border text-sm outline-none">
                         </div>
                         <div>
                             <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">施工地址</label>
-                            <input type="text" id="address" class="block w-full border-slate-200 rounded-xl p-3 border text-sm outline-none focus:ring-2 focus:ring-emerald-500/20">
+                            <input type="text" id="address" class="block w-full border-slate-200 rounded-xl p-3 border text-sm outline-none">
                         </div>
                     </div>
                     
-                    <!-- 本次修正：汽車專屬欄位（冷氣模式下自動隱藏） -->
-                    <div id="carSpecificFields" class="grid grid-cols-1 md:grid-cols-2 gap-4 hidden">
+                    <!-- 汽車模式專屬：基本資料 -->
+                    <div id="carBasicInfoWrap" class="hidden grid grid-cols-1 md:grid-cols-2 gap-4 bg-blue-50/20 p-4 rounded-xl border border-blue-100/50">
                         <div>
-                            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">車輛廠牌 / 車型</label>
-                            <input type="text" id="carBrand" placeholder="例如：Toyota, BMW" class="block w-full border-slate-200 rounded-xl p-3 border text-sm outline-none focus:ring-2 focus:ring-emerald-500/20">
-                            <div id="carTypeButtons" class="flex flex-wrap gap-2 mt-2">
-                                <button type="button" onclick="appendCarType('轎車')" class="px-2 py-1 bg-white border border-slate-200 text-slate-600 rounded text-[10px] hover:bg-slate-50 transition-colors font-bold">+ 轎車</button>
-                                <button type="button" onclick="appendCarType('休旅車')" class="px-2 py-1 bg-white border border-slate-200 text-slate-600 rounded text-[10px] hover:bg-slate-50 transition-colors font-bold">+ 休旅車</button>
-                                <button type="button" onclick="appendCarType('7人座')" class="px-2 py-1 bg-white border border-slate-200 text-slate-600 rounded text-[10px] hover:bg-slate-50 transition-colors font-bold">+ 7人座</button>
-                            </div>
+                            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">廠牌</label>
+                            <input type="text" id="carBrand" placeholder="例：Toyota" class="block w-full border-slate-200 rounded-xl p-3 border text-sm outline-none">
                         </div>
                         <div>
                             <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">車牌號碼</label>
-                            <input type="text" id="licensePlate" placeholder="例如：ABC-1234" class="block w-full border-slate-200 rounded-xl p-3 border text-sm outline-none focus:ring-2 focus:ring-emerald-500/20">
+                            <input type="text" id="licensePlate" placeholder="例：ABC-1234" class="block w-full border-slate-200 rounded-xl p-3 border text-sm outline-none">
                         </div>
                     </div>
 
-                    <!-- 本次修正：汽車模式專屬的美容類別按鈕區塊 -->
-                    <div id="carServiceButtons" class="hidden space-y-2 bg-blue-50/50 p-4 rounded-xl border border-blue-100">
-                        <label class="block text-xs font-bold text-blue-600 uppercase tracking-wider"><i data-lucide="car" class="lucide mr-1"></i> 選擇美容類別 (可複選)</label>
-                        <div class="flex flex-wrap gap-2 pt-1">
-                            <button type="button" onclick="addCarService('精緻洗車')" class="px-3 py-1.5 bg-white border border-blue-200 text-blue-700 rounded-lg text-[11px] hover:bg-blue-50 transition-colors font-bold shadow-sm">+ 精緻洗車</button>
-                            <button type="button" onclick="addCarService('小美容')" class="px-3 py-1.5 bg-white border border-blue-200 text-blue-700 rounded-lg text-[11px] hover:bg-blue-50 transition-colors font-bold shadow-sm">+ 小美容</button>
-                            <button type="button" onclick="addCarService('大美容')" class="px-3 py-1.5 bg-white border border-blue-200 text-blue-700 rounded-lg text-[11px] hover:bg-blue-50 transition-colors font-bold shadow-sm">+ 大美容</button>
-                            <button type="button" onclick="addCarService('車內深層清潔')" class="px-3 py-1.5 bg-white border border-blue-200 text-blue-700 rounded-lg text-[11px] hover:bg-blue-50 transition-colors font-bold shadow-sm">+ 車內深層清潔</button>
-                            <button type="button" onclick="addCarService('玻璃鍍膜')" class="px-3 py-1.5 bg-white border border-blue-200 text-blue-700 rounded-lg text-[11px] hover:bg-blue-50 transition-colors font-bold shadow-sm">+ 玻璃鍍膜</button>
+                    <!-- ================= 冷氣專屬區塊 ================= -->
+                    <div id="acDetailWrap" class="space-y-4">
+                        <div class="grid grid-cols-3 gap-3 bg-slate-50 p-4 rounded-xl border border-slate-100">
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">冷氣台數</label>
+                                <input type="number" id="acCount" value="0" min="0" onfocus="this.select()" oninput="handleAcCountChange()" class="w-full rounded-lg p-2 border border-slate-200 text-sm font-bold">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">洗衣機</label>
+                                <input type="number" id="wmCount" value="0" min="0" onfocus="this.select()" class="w-full rounded-lg p-2 border border-slate-200 text-sm font-bold">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">水塔</label>
+                                <input type="number" id="wtCount" value="0" min="0" onfocus="this.select()" class="w-full rounded-lg p-2 border border-slate-200 text-sm font-bold">
+                            </div>
+                        </div>
+
+                        <div id="acBrandSection" class="hidden space-y-2 bg-emerald-50/30 p-4 rounded-xl border border-emerald-100">
+                            <div class="flex justify-between items-center mb-1">
+                                <label class="block text-xs font-bold text-emerald-600 uppercase tracking-wider"><i data-lucide="snowflake" class="lucide mr-1"></i> 冷氣明細</label>
+                                <button type="button" onclick="addAcDetailRow()" class="text-[10px] bg-emerald-600 text-white px-2 py-1 rounded shadow-sm">+ 增加明細</button>
+                            </div>
+                            <div id="acDetailsContainer" class="space-y-2"></div>
                         </div>
                     </div>
 
-                    <div id="serviceItemSection" class="space-y-2 bg-emerald-50/30 p-4 rounded-xl border border-emerald-100">
-                        <div class="flex justify-between items-center mb-1">
-                            <label class="block text-xs font-bold text-emerald-600 uppercase tracking-wider"><i data-lucide="layers" class="lucide mr-1"></i> 營業品項明細</label>
-                            <button type="button" onclick="addServiceItemRow()" class="text-[10px] bg-emerald-600 text-white px-2 py-1 rounded shadow-sm">+ 增加明細</button>
+                    <!-- ================= 汽車專屬區塊 ================= -->
+                    <div id="carDetailWrap" class="hidden space-y-4">
+                        <div class="bg-blue-50/30 p-4 rounded-xl border border-blue-100">
+                            <label class="block text-xs font-bold text-blue-600 uppercase tracking-wider mb-2"><i data-lucide="car" class="lucide mr-1"></i> 車種選擇</label>
+                            <select id="carType" class="w-full border-slate-200 rounded-xl p-3 border text-sm outline-none font-bold text-slate-700 bg-white">
+                                <option value="轎車">轎車</option>
+                                <option value="休旅車">休旅車</option>
+                                <option value="7人座">7人座</option>
+                            </select>
                         </div>
-                        <div id="serviceDetailsContainer" class="space-y-2"></div>
-                        <div id="quickCategoryTags" class="flex flex-wrap gap-2 mt-2 pt-2 border-t border-emerald-100/50"></div>
+                        
+                        <div class="bg-blue-50/30 p-4 rounded-xl border border-blue-100">
+                            <label class="block text-xs font-bold text-blue-600 uppercase tracking-wider mb-3"><i data-lucide="sparkles" class="lucide mr-1"></i> 美容類別 (可複選)</label>
+                            <div class="space-y-3">
+                                <!-- 動態產生 5 個美容類別 -->
+                                <div class="flex items-center gap-3">
+                                    <label class="car-svc-label flex-1"><input type="checkbox" id="carSvc_1" value="精緻洗車" class="car-svc-checkbox" onchange="toggleCarPriceInput(1)"> 精緻洗車</label>
+                                    <input type="number" id="carPrice_1" class="hidden w-28 rounded-lg p-2 border border-blue-200 text-sm font-bold text-right" placeholder="輸入金額" oninput="calcCarTotal()" onfocus="this.select()">
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <label class="car-svc-label flex-1"><input type="checkbox" id="carSvc_2" value="小美容" class="car-svc-checkbox" onchange="toggleCarPriceInput(2)"> 小美容</label>
+                                    <input type="number" id="carPrice_2" class="hidden w-28 rounded-lg p-2 border border-blue-200 text-sm font-bold text-right" placeholder="輸入金額" oninput="calcCarTotal()" onfocus="this.select()">
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <label class="car-svc-label flex-1"><input type="checkbox" id="carSvc_3" value="大美容" class="car-svc-checkbox" onchange="toggleCarPriceInput(3)"> 大美容</label>
+                                    <input type="number" id="carPrice_3" class="hidden w-28 rounded-lg p-2 border border-blue-200 text-sm font-bold text-right" placeholder="輸入金額" oninput="calcCarTotal()" onfocus="this.select()">
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <label class="car-svc-label flex-1"><input type="checkbox" id="carSvc_4" value="車內深層清潔" class="car-svc-checkbox" onchange="toggleCarPriceInput(4)"> 車內深層清潔</label>
+                                    <input type="number" id="carPrice_4" class="hidden w-28 rounded-lg p-2 border border-blue-200 text-sm font-bold text-right" placeholder="輸入金額" oninput="calcCarTotal()" onfocus="this.select()">
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <label class="car-svc-label flex-1"><input type="checkbox" id="carSvc_5" value="玻璃鍍膜" class="car-svc-checkbox" onchange="toggleCarPriceInput(5)"> 玻璃鍍膜</label>
+                                    <input type="number" id="carPrice_5" class="hidden w-28 rounded-lg p-2 border border-blue-200 text-sm font-bold text-right" placeholder="輸入金額" oninput="calcCarTotal()" onfocus="this.select()">
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <datalist id="categoryNamesList"></datalist>
+                    <!-- ================================================ -->
 
                     <div class="space-y-2 bg-rose-50/30 p-4 rounded-xl border border-rose-100">
                         <div class="flex justify-between items-center mb-1">
@@ -913,7 +967,7 @@
                             <label class="block text-xs font-bold text-indigo-600 uppercase tracking-wider"><i data-lucide="forward" class="lucide mr-1"></i> PASS 案件設定</label>
                         </div>
                         <div class="flex gap-2">
-                            <input type="text" id="passFrom" list="passNamesList" placeholder="輸入 PASS 來源對象名稱" class="flex-1 rounded-lg p-2 border border-indigo-100 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20" oninput="updateQuickPassTags()">
+                            <input type="text" id="passFrom" list="passNamesList" placeholder="輸入 PASS 來源對象名稱" class="flex-1 rounded-lg p-2 border border-indigo-100 text-sm" oninput="updateQuickPassTags()">
                         </div>
                         <div id="quickPassTags" class="flex flex-wrap gap-2 mt-2 pt-2 border-t border-indigo-100/50"></div>
                     </div>
@@ -942,8 +996,10 @@
                         <span>全</span><span>部</span><span>年</span><span>份</span><span>總</span><span>累</span><span>計</span>
                     </div>
                     <div class="flex-1">
-                        <div id="allStatsContainer" class="grid grid-cols-3 gap-2 text-center border-b border-white/10 pb-2 mb-2">
-                            <!-- 動態填入 -->
+                        <div class="grid grid-cols-3 gap-2 text-center border-b border-white/10 pb-2 mb-2">
+                            <div><p class="text-[10px] text-white/65" id="statsLabel1">冷氣</p><p class="text-xl font-bold" id="allAc">0</p></div>
+                            <div><p class="text-[10px] text-white/65" id="statsLabel2">洗衣機</p><p class="text-xl font-bold" id="allWm">0</p></div>
+                            <div><p class="text-[10px] text-white/65" id="statsLabel3">水塔</p><p class="text-xl font-bold" id="allWt">0</p></div>
                         </div>
                         <div class="metric-box-grid">
                             <div class="metric-box metric-box-rev">
@@ -981,7 +1037,7 @@
                         <div>
                             <div class="flex justify-between items-start">
                                 <h3 class="text-slate-500 text-[10px] font-bold uppercase tracking-widest" id="yearTitle">年度統計</h3>
-                                <div class="text-[10px] text-slate-400">年度數量: <span class="text-slate-700 font-bold" id="yCounts">無資料</span></div>
+                                <div class="text-[10px] text-slate-400">年度數量: <span class="text-slate-700 font-bold" id="yCounts">冷0 / 洗0 / 水0</span></div>
                             </div>
                             <div class="metric-box-grid mt-3">
                                 <div class="metric-box metric-box-rev">
@@ -1019,7 +1075,7 @@
                         <div>
                             <div class="filter-summary-head flex justify-between items-start">
                                 <h3 class="text-emerald-600 text-[10px] font-bold uppercase tracking-widest" id="monthTitle">本月統計</h3>
-                                <div class="filter-count-line text-[10px] text-emerald-700/70"><span id="mCountsLabel">月度數量</span>: <span class="text-emerald-800 font-bold" id="mCounts">無資料</span></div>
+                                <div class="filter-count-line text-[10px] text-emerald-700/70"><span id="mCountsLabel">月度數量</span>: <span class="text-emerald-800 font-bold" id="mCounts">冷0 / 洗0 / 水0</span></div>
                             </div>
                             <div class="metric-box-grid mt-3">
                                 <div class="metric-box metric-box-rev">
@@ -1051,8 +1107,6 @@
                                 <div id="passSummaryList" class="pass-summary-list grid grid-cols-1 gap-2"></div>
                             </div>
                         </div>
-
-                        <div id="unpaidSection" class="hidden"></div>
                     </div>
                 </div>
 
@@ -1077,7 +1131,7 @@
                                 <div class="absolute inset-y-0 left-3 flex items-center pointer-events-none text-slate-400">
                                     <i data-lucide="search" class="w-4 h-4"></i>
                                 </div>
-                                <input type="text" id="searchKeyword" oninput="filterRecords()" placeholder="可輸入：姓名、車牌、廠牌、電話、品項、小幫手..." class="w-full bg-slate-50 border-none rounded-xl p-3 pl-10 text-sm outline-none focus:ring-2 focus:ring-slate-100">
+                                <input type="text" id="searchKeyword" oninput="filterRecords()" placeholder="可輸入多個關鍵字：姓名、電話、地址、機型、PASS、小幫手、備註..." class="w-full bg-slate-50 border-none rounded-xl p-3 pl-10 text-sm outline-none focus:ring-2 focus:ring-slate-100">
                             </div>
                             <div class="date-filter-row">
                                 <div>
@@ -1090,9 +1144,13 @@
                                 </div>
                             </div>
                         </div>
+                        <!-- 品項與進度篩選按鈕群組 -->
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
-                            <div id="typeFilterGroup" class="flex gap-1 bg-slate-50 rounded-xl p-1 h-[38px] overflow-x-auto scrollbar-hide items-center">
-                                <button type="button" onclick="setTypeFilter('all', this)" class="type-btn flex-1 min-w-fit rounded-lg px-3 py-1.5 text-[10px] font-bold transition-all bg-slate-200 shadow-sm text-slate-700">全部</button>
+                            <div id="typeFilterGroup" class="flex gap-1 bg-slate-50 rounded-xl p-1 h-[38px]">
+                                <button type="button" onclick="setTypeFilter('all', this)" class="type-btn flex-1 rounded-lg text-[10px] font-bold transition-all bg-slate-200 shadow-sm text-slate-700">全部品項</button>
+                                <button type="button" onclick="setTypeFilter('ac', this)" class="type-btn flex-1 rounded-lg text-[10px] font-bold transition-all text-slate-400">冷氣</button>
+                                <button type="button" onclick="setTypeFilter('wm', this)" class="type-btn flex-1 rounded-lg text-[10px] font-bold transition-all text-slate-400">洗衣機</button>
+                                <button type="button" onclick="setTypeFilter('wt', this)" class="type-btn flex-1 rounded-lg text-[10px] font-bold transition-all text-slate-400">水塔</button>
                             </div>
                             <div id="statusFilterGroup" class="flex gap-1 bg-slate-50 rounded-xl p-1 h-[38px]">
                                 <button type="button" onclick="setStatusFilter('all', this)" class="status-btn flex-1 rounded-lg text-[10px] font-bold transition-all bg-slate-200 shadow-sm text-slate-700">全部進度</button>
@@ -1110,6 +1168,7 @@
             </section>
         </div>
 
+        <!-- 懸浮待收提醒 HTML 結構 -->
         <div id="floatingUnpaidWrap" class="hidden">
             <div id="floatingUnpaidList" class="floating-unpaid-list hidden">
                 <h5 class="text-[11px] font-bold text-slate-700 uppercase tracking-widest mb-2 pb-2 border-b border-slate-100 flex justify-between items-center">
@@ -1143,6 +1202,9 @@
         import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
+        // ==========================================
+        // Firebase 設定：使用你的專案金鑰
+        // ==========================================
         const firebaseConfig = {
             apiKey: "AIzaSyDTyt_nIV1h_MFRhQoT9PHFMXhus1jQVL4",
             projectId: "ac-records-b8c40",
@@ -1157,19 +1219,29 @@
         const auth = getAuth(app);
         const provider = new GoogleAuthProvider();
         
-        // 本次修正：導入全域模式變數，控制整個系統要在哪個資料庫運作
-        let globalMode = 'ac'; // 'ac' | 'car'
-        let currentUser = null;
-        let currentCollectionName = "cleaningRecords";
-        
-        const getRecordsCol = () => collection(db, currentCollectionName);
-        const getRecordDoc = (id) => doc(db, currentCollectionName, id);
+        // 雙模式全域變數
+        let currentAppMode = 'ac'; // 'ac' = 冷氣清洗, 'car' = 汽車清洗
 
-        const allowedEmails = ['eroraror@gmail.com', 'graceyiyo@gmail.com'];
+        // 動態資料庫綁定
+        const getRecordsCol = () => {
+            let baseName = currentAppMode === 'car' ? 'carRecords' : 'cleaningRecords';
+            if (allowedEmails.includes(auth.currentUser.email.toLowerCase())) {
+                return collection(db, baseName);
+            } else {
+                return collection(db, baseName + "_" + auth.currentUser.uid);
+            }
+        };
+        const getRecordDoc = (id) => {
+            let baseName = currentAppMode === 'car' ? 'carRecords' : 'cleaningRecords';
+            if (allowedEmails.includes(auth.currentUser.email.toLowerCase())) {
+                return doc(db, baseName, id);
+            } else {
+                return doc(db, baseName + "_" + auth.currentUser.uid, id);
+            }
+        };
 
         let allRecords = [];
         let editingId = null;
-        let knownCategories = []; 
         let knownAssistantNames = []; 
         let knownPassNames = [];
         let snapshotUnsubscribe = null;
@@ -1177,30 +1249,86 @@
         let currentYearRecords = [];
         let currentMonthRecords = [];
         
+        // 狀態與品項篩選變數
         let currentStatusFilter = 'all';
         let currentTypeFilter = 'all';
+
+        // 只有在名單內的人，才會讀取原始資料庫
+        const allowedEmails = [
+            'eroraror@gmail.com', 
+            'graceyiyo@gmail.com'
+        ];
 
         document.addEventListener('DOMContentLoaded', () => {
             lucide.createIcons();
         });
 
-        // 本次修正：更新集合名稱，將冷氣與汽車強制拆分不同資料庫
-        function updateCollectionName() {
-            if (!currentUser) return;
-            let baseName = allowedEmails.includes(currentUser.email.toLowerCase()) ? "cleaningRecords" : `cleaningRecords_${currentUser.uid}`;
-            currentCollectionName = globalMode === 'car' ? `${baseName}_car` : baseName;
-        }
+        // 模式切換邏輯
+        window.switchAppMode = (mode) => {
+            if (currentAppMode === mode) return;
+            currentAppMode = mode;
+
+            // 1. 更新導航列按鈕樣式與大標題
+            document.getElementById('navAcBtn').className = mode === 'ac' ? 'px-3 py-1 rounded bg-slate-500 text-white shadow-sm transition-all' : 'px-3 py-1 rounded text-slate-300 hover:text-white transition-all';
+            document.getElementById('navCarBtn').className = mode === 'car' ? 'px-3 py-1 rounded bg-slate-500 text-white shadow-sm transition-all' : 'px-3 py-1 rounded text-slate-300 hover:text-white transition-all';
+            document.getElementById('mainTitle').innerText = mode === 'ac' ? '冷氣清洗紀錄' : '汽車清洗紀錄';
+            document.title = mode === 'ac' ? '冷氣清洗紀錄' : '汽車清洗紀錄';
+
+            // 2. 更新表單顯示區塊
+            document.getElementById('carBasicInfoWrap').classList.toggle('hidden', mode !== 'car');
+            document.getElementById('acDetailWrap').classList.toggle('hidden', mode !== 'ac');
+            document.getElementById('carDetailWrap').classList.toggle('hidden', mode !== 'car');
+
+            // 3. 更新統計卡片與篩選按鈕
+            if (mode === 'ac') {
+                document.getElementById('statsLabel1').innerText = '冷氣';
+                document.getElementById('statsLabel2').innerText = '洗衣機';
+                document.getElementById('statsLabel3').innerText = '水塔';
+                document.getElementById('typeFilterGroup').innerHTML = `
+                    <button type="button" onclick="setTypeFilter('all', this)" class="type-btn flex-1 rounded-lg text-[10px] font-bold transition-all bg-slate-200 shadow-sm text-slate-700">全部品項</button>
+                    <button type="button" onclick="setTypeFilter('ac', this)" class="type-btn flex-1 rounded-lg text-[10px] font-bold transition-all text-slate-400">冷氣</button>
+                    <button type="button" onclick="setTypeFilter('wm', this)" class="type-btn flex-1 rounded-lg text-[10px] font-bold transition-all text-slate-400">洗衣機</button>
+                    <button type="button" onclick="setTypeFilter('wt', this)" class="type-btn flex-1 rounded-lg text-[10px] font-bold transition-all text-slate-400">水塔</button>
+                `;
+            } else {
+                document.getElementById('statsLabel1').innerText = '轎車';
+                document.getElementById('statsLabel2').innerText = '休旅車';
+                document.getElementById('statsLabel3').innerText = '7人座';
+                document.getElementById('typeFilterGroup').innerHTML = `
+                    <button type="button" onclick="setTypeFilter('all', this)" class="type-btn flex-1 rounded-lg text-[10px] font-bold transition-all bg-slate-200 shadow-sm text-slate-700">全部品項</button>
+                    <button type="button" onclick="setTypeFilter('轎車', this)" class="type-btn flex-1 rounded-lg text-[10px] font-bold transition-all text-slate-400">轎車</button>
+                    <button type="button" onclick="setTypeFilter('休旅車', this)" class="type-btn flex-1 rounded-lg text-[10px] font-bold transition-all text-slate-400">休旅車</button>
+                    <button type="button" onclick="setTypeFilter('7人座', this)" class="type-btn flex-1 rounded-lg text-[10px] font-bold transition-all text-slate-400">7人座</button>
+                `;
+            }
+            
+            // 4. 重置篩選條件
+            currentTypeFilter = 'all';
+            currentStatusFilter = 'all';
+            document.getElementById('searchKeyword').value = "";
+
+            // 5. 切換資料庫連線
+            if (snapshotUnsubscribe) {
+                snapshotUnsubscribe();
+                snapshotUnsubscribe = null;
+            }
+            document.getElementById('recordList').innerHTML = ''; // 清空畫面
+            allRecords = [];
+            startDataSubscription();
+
+            // 如果在表單頁，重置表單
+            if (!document.getElementById('formPage').classList.contains('hidden')) {
+                prepareNewForm();
+            }
+        };
 
         onAuthStateChanged(auth, (user) => {
             if (user) {
-                currentUser = user;
-                updateCollectionName();
                 document.getElementById('authPage').classList.add('hidden');
                 document.getElementById('mainApp').classList.remove('hidden');
                 document.getElementById('authError').classList.add('hidden');
                 startDataSubscription();
             } else {
-                currentUser = null;
                 document.getElementById('authPage').classList.remove('hidden');
                 document.getElementById('mainApp').classList.add('hidden');
                 if (snapshotUnsubscribe) {
@@ -1229,13 +1357,8 @@
             }
         };
 
-        // 本次修正：切換資料庫時，取消舊監聽並重新綁定
         function startDataSubscription() {
-            if (snapshotUnsubscribe) {
-                snapshotUnsubscribe();
-                snapshotUnsubscribe = null;
-            }
-            updateCollectionName();
+            if (snapshotUnsubscribe) return;
             snapshotUnsubscribe = onSnapshot(getRecordsCol(), (snap) => {
                 allRecords = snap.docs.map(d => ({ id: d.id, ...d.data() }));
                 updateDatalists();
@@ -1255,136 +1378,107 @@
         document.getElementById('dateStartFilter').value = formatLocalDate(firstDayForFilter);
         document.getElementById('dateEndFilter').value = formatLocalDate(lastDayForFilter);
 
-        const normalizeRecord = (r) => {
-            if (r.serviceItems && Array.isArray(r.serviceItems)) return r.serviceItems;
-            
-            let items = [];
-            if (r.acBrand) {
-                r.acBrand.split('+').forEach(part => {
-                    const m = part.match(/(.*)-(.*)台(?:\*(.*)元)?/);
-                    if (m) items.push({ category: '冷氣', title: m[1], qty: parseInt(m[2]) || 0, price: m[3] ? parseInt(m[3]) : '' });
-                });
-            } else if (r.acCount > 0) {
-                items.push({ category: '冷氣', title: '', qty: parseInt(r.acCount), price: '' });
-            }
-            if (r.wmCount > 0) items.push({ category: '洗衣機', title: '', qty: parseInt(r.wmCount), price: '' });
-            if (r.wtCount > 0) items.push({ category: '水塔', title: '', qty: parseInt(r.wtCount), price: '' });
-            return items;
-        };
-
         window.showPage = (id) => {
             document.getElementById('formPage').classList.toggle('hidden', id !== 'formPage');
             document.getElementById('listPage').classList.toggle('hidden', id !== 'listPage');
             lucide.createIcons(); 
         };
 
-        // 本次新增：切換表單在不同模式下的 UI 顯示
-        function applyFormModeUI() {
-            const carFields = document.getElementById('carSpecificFields');
-            const carServiceButtons = document.getElementById('carServiceButtons');
-            const quickCategoryTags = document.getElementById('quickCategoryTags');
-
-            if (globalMode === 'ac') {
-                carFields.classList.add('hidden');
-                carServiceButtons.classList.add('hidden');
-                quickCategoryTags.classList.remove('hidden');
-            } else {
-                carFields.classList.remove('hidden');
-                carServiceButtons.classList.remove('hidden');
-                quickCategoryTags.classList.add('hidden');
-            }
-            lucide.createIcons();
-        }
-
-        // 本次新增：全域模式切換，控制 Navbar、資料庫、表單 UI
-        window.setGlobalMode = (mode) => {
-            if (globalMode === mode) return;
-            globalMode = mode;
-
-            document.getElementById('navModeAc').className = mode === 'ac' ? "px-3 py-1.5 text-[11px] md:text-xs font-bold rounded-md bg-slate-500 text-white shadow-sm transition-all whitespace-nowrap" : "px-3 py-1.5 text-[11px] md:text-xs font-bold rounded-md text-slate-400 hover:text-white transition-all whitespace-nowrap";
-            document.getElementById('navModeCar').className = mode === 'car' ? "px-3 py-1.5 text-[11px] md:text-xs font-bold rounded-md bg-slate-500 text-white shadow-sm transition-all whitespace-nowrap" : "px-3 py-1.5 text-[11px] md:text-xs font-bold rounded-md text-slate-400 hover:text-white transition-all whitespace-nowrap";
-
-            applyFormModeUI();
-            
-            // 清除篩選，保持畫面乾淨
-            document.getElementById('searchKeyword').value = "";
-            currentTypeFilter = 'all';
-            currentStatusFilter = 'all';
-
-            if (currentUser) {
-                startDataSubscription();
-            }
-            
-            showPage('listPage');
-        };
-
-        window.appendCarType = (typeStr) => {
-            const input = document.getElementById('carBrand');
-            const currentVal = input.value.trim();
-            if (currentVal) {
-                if (!currentVal.includes(typeStr)) {
-                    input.value = currentVal + ' ' + typeStr;
-                }
-            } else {
-                input.value = typeStr;
-            }
-        };
-
-        window.addCarService = (serviceName) => {
-            addServiceItemRow(serviceName, '', 1, '');
-        };
-
         window.prepareNewForm = () => {
             editingId = null;
             document.getElementById('recordForm').reset();
-            document.getElementById('serviceDetailsContainer').innerHTML = '';
-            
-            if (globalMode === 'ac') {
-                addServiceItemRow('', '', 1, '');
-            }
-
+            document.getElementById('acDetailsContainer').innerHTML = '';
             document.getElementById('assistantDetailsContainer').innerHTML = '';
             document.getElementById('passFrom').value = '';
             document.getElementById('formNetProfit').value = '$0';
-            updateQuickCategoryTags();
+            
+            // 重置汽車特有欄位
+            for (let i = 1; i <= 5; i++) {
+                document.getElementById(`carPrice_${i}`).classList.add('hidden');
+                document.getElementById(`carPrice_${i}`).value = '';
+            }
+
+            if (currentAppMode === 'ac') {
+                toggleAcBrand();
+            }
             updateQuickAssistantTags();
             updateQuickPassTags();
-            
-            applyFormModeUI();
             showPage('formPage');
         };
 
-        window.addServiceItemRow = (cat = "", title = "", qty = 1, price = "") => {
-            const container = document.getElementById('serviceDetailsContainer');
-            const div = document.createElement('div');
-            const isCarMode = globalMode === 'car';
-            div.className = "grid grid-cols-12 gap-2 items-center service-detail-row mb-2";
-            div.innerHTML = `
-                <div class="${isCarMode ? 'col-span-7' : 'col-span-4'}"><input type="text" value="${cat}" list="categoryNamesList" placeholder="品項" class="svc-cat-input w-full rounded-lg p-2 border border-emerald-100 text-sm font-bold ${isCarMode ? 'text-blue-700' : 'text-emerald-700'} focus:outline-none focus:ring-2 focus:ring-emerald-500/20"></div>
-                <div class="col-span-3 ${isCarMode ? 'hidden' : ''}"><input type="text" value="${title}" placeholder="說明" class="svc-title-input w-full rounded-lg p-2 border border-emerald-100 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20"></div>
-                <div class="col-span-2 ${isCarMode ? 'hidden' : ''}"><input type="number" value="${qty}" min="1" placeholder="數量" onfocus="this.select()" oninput="calcTotalFromDetails()" class="svc-qty-input w-full rounded-lg p-2 border border-emerald-100 text-sm font-bold text-center focus:outline-none focus:ring-2 focus:ring-emerald-500/20"></div>
-                <div class="${isCarMode ? 'col-span-4' : 'col-span-2'}"><input type="number" value="${price}" placeholder="${isCarMode ? '請輸入金額' : '單價'}" onfocus="this.select()" oninput="calcTotalFromDetails()" class="svc-price-input w-full rounded-lg p-2 border border-emerald-100 text-sm text-center focus:outline-none focus:ring-2 focus:ring-emerald-500/20"></div>
-                <div class="col-span-1 text-center"><button type="button" onclick="this.parentElement.parentElement.remove(); calcTotalFromDetails();" class="text-rose-400 font-bold text-lg">&times;</button></div>
-            `;
-            container.appendChild(div);
-            if(isCarMode) {
-                setTimeout(() => div.querySelector('.svc-price-input').focus(), 50);
+        // ====== 汽車表單專屬邏輯 ======
+        window.toggleCarPriceInput = (idx) => {
+            const cb = document.getElementById(`carSvc_${idx}`);
+            const input = document.getElementById(`carPrice_${idx}`);
+            if (cb.checked) {
+                input.classList.remove('hidden');
+                input.focus();
+            } else {
+                input.classList.add('hidden');
+                input.value = '';
             }
-            lucide.createIcons();
+            calcCarTotal();
         };
 
-        window.calcTotalFromDetails = () => {
+        window.calcCarTotal = () => {
             let total = 0;
-            document.querySelectorAll('.service-detail-row').forEach(row => {
-                const qtyInput = row.querySelector('.svc-qty-input');
-                const qty = qtyInput ? (parseInt(qtyInput.value) || 1) : 1; 
-                const price = parseInt(row.querySelector('.svc-price-input').value) || 0;
-                total += (qty * price);
-            });
+            for (let i = 1; i <= 5; i++) {
+                if (document.getElementById(`carSvc_${i}`).checked) {
+                    total += (parseInt(document.getElementById(`carPrice_${i}`).value) || 0);
+                }
+            }
             document.getElementById('totalAmount').value = total;
             calcFormNet();
         };
 
+        // ====== 冷氣表單專屬邏輯 ======
+        window.handleAcCountChange = () => {
+            if (currentAppMode !== 'ac') return;
+            const count = parseInt(document.getElementById('acCount').value) || 0;
+            toggleAcBrand();
+            const container = document.getElementById('acDetailsContainer');
+            if (count > 0 && container.children.length === 0) addAcDetailRow(count);
+        };
+
+        window.toggleAcBrand = () => {
+            document.getElementById('acBrandSection').classList.toggle('hidden', document.getElementById('acCount').value <= 0);
+            lucide.createIcons();
+        };
+
+        window.addAcDetailRow = (val = "") => {
+            const container = document.getElementById('acDetailsContainer');
+            const totalTarget = parseInt(document.getElementById('acCount').value) || 0;
+            if (val === "" && totalTarget > 0) {
+                let currentFilled = 0;
+                document.querySelectorAll('.ac-qty-input').forEach(input => currentFilled += (parseInt(input.value) || 0));
+                val = Math.max(0, totalTarget - currentFilled);
+            }
+            const div = document.createElement('div');
+            div.className = "grid grid-cols-12 gap-2 items-center ac-detail-row mb-2";
+            div.innerHTML = `
+                <div class="col-span-5"><input type="text" placeholder="廠牌" class="ac-brand-input w-full rounded-lg p-2 border border-emerald-100 text-sm"></div>
+                <div class="col-span-3"><input type="number" value="${val}" onfocus="this.select()" oninput="calcTotalFromDetails()" class="ac-qty-input w-full rounded-lg p-2 border border-emerald-100 text-sm font-bold"></div>
+                <div class="col-span-3"><input type="number" placeholder="單價" onfocus="this.select()" oninput="calcTotalFromDetails()" class="ac-price-input w-full rounded-lg p-2 border border-emerald-100 text-sm"></div>
+                <div class="col-span-1 text-center"><button type="button" onclick="this.parentElement.parentElement.remove(); calcTotalFromDetails();" class="text-rose-400 font-bold text-lg">&times;</button></div>
+            `;
+            container.appendChild(div);
+        };
+
+        window.calcTotalFromDetails = () => {
+            if (currentAppMode !== 'ac') return;
+            let total = 0;
+            document.querySelectorAll('.ac-detail-row').forEach(row => {
+                const qty = parseInt(row.querySelector('.ac-qty-input').value) || 0;
+                const price = parseInt(row.querySelector('.ac-price-input').value) || 0;
+                total += (qty * price);
+            });
+            if (total > 0) {
+                document.getElementById('totalAmount').value = total;
+                calcFormNet();
+            }
+        };
+
+        // ====== 共用表單邏輯 ======
         window.addAssistantRow = (name = "", amount = "") => {
             const container = document.getElementById('assistantDetailsContainer');
             const div = document.createElement('div');
@@ -1410,17 +1504,6 @@
             const rev = parseInt(document.getElementById('totalAmount').value) || 0;
             const exp = parseInt(document.getElementById('assistantPay').value) || 0;
             document.getElementById('formNetProfit').value = `$${(rev - exp).toLocaleString()}`;
-        };
-
-        window.updateQuickCategoryTags = () => {
-            const container = document.getElementById('quickCategoryTags');
-            if (knownCategories.length === 0) {
-                container.innerHTML = '<span class="text-[10px] text-emerald-400">尚無常用營業品項</span>';
-                return;
-            }
-            container.innerHTML = knownCategories.map(cat => `
-                <button type="button" onclick="addServiceItemRow('${cat}', '', 1, '')" class="px-2 py-1 bg-white border border-emerald-200 text-emerald-600 rounded text-[10px] hover:bg-emerald-50 transition-colors font-bold">+ ${cat}</button>
-            `).join('');
         };
 
         window.updateQuickAssistantTags = () => {
@@ -1459,36 +1542,6 @@
 
         document.getElementById('recordForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            
-            let serviceItems = [];
-            let acCount = 0, wmCount = 0, wtCount = 0;
-            let acDetailsArray = [];
-
-            document.querySelectorAll('.service-detail-row').forEach(row => {
-                const cat = row.querySelector('.svc-cat-input').value.trim();
-                const titleInput = row.querySelector('.svc-title-input');
-                const title = titleInput ? titleInput.value.trim() : '';
-                const qtyInput = row.querySelector('.svc-qty-input');
-                const qty = qtyInput ? (parseInt(qtyInput.value) || 1) : 1; 
-                const price = row.querySelector('.svc-price-input').value;
-                if (cat) {
-                    serviceItems.push({ category: cat, title, qty, price: price ? parseInt(price) : null });
-
-                    if (cat === '冷氣') {
-                        acCount += qty;
-                        acDetailsArray.push(`${title || '機型未填'}-${qty}台${price ? `*${price}元` : ''}`);
-                    } else if (cat === '洗衣機') {
-                        wmCount += qty;
-                    } else if (cat === '水塔') {
-                        wtCount += qty;
-                    }
-                }
-            });
-
-            if (serviceItems.length === 0) { 
-                alert('⚠️ 請至少輸入一項服務品項！'); 
-                return; 
-            }
 
             let assistantArray = [];
             document.querySelectorAll('.assistant-detail-row').forEach(row => {
@@ -1497,24 +1550,51 @@
                 if (n && a) assistantArray.push(`${n}:${a}`);
             });
 
-            // 本次修正：若為冷氣模式，強制將車籍資料清空寫入資料庫，保持資料庫純淨
+            // 共用欄位
             const record = {
                 bookingTime: document.getElementById('bookingTime').value,
                 customerName: document.getElementById('customerName').value,
                 phone: document.getElementById('phone').value || "",
                 address: document.getElementById('address').value || "",
-                carBrand: globalMode === 'car' ? document.getElementById('carBrand').value.trim() : "",
-                licensePlate: globalMode === 'car' ? document.getElementById('licensePlate').value.trim() : "",
-                
-                acCount, wmCount, wtCount, acBrand: acDetailsArray.join('+'), 
-                serviceItems, 
-
                 assistantDetail: assistantArray.join(','),
                 passFrom: document.getElementById('passFrom').value.trim(),
                 totalAmount: parseInt(document.getElementById('totalAmount').value) || 0,
                 assistantPay: parseInt(document.getElementById('assistantPay').value) || 0,
                 note: document.getElementById('note').value || ''
             };
+
+            // 依據模式提取特定欄位
+            if (currentAppMode === 'ac') {
+                const totalAc = parseInt(document.getElementById('acCount').value) || 0;
+                let acDetailTotal = 0; let acDetailsArray = [];
+                document.querySelectorAll('.ac-detail-row').forEach(row => {
+                    const brand = row.querySelector('.ac-brand-input').value.trim();
+                    const qty = parseInt(row.querySelector('.ac-qty-input').value) || 0;
+                    const price = row.querySelector('.ac-price-input').value;
+                    acDetailTotal += qty;
+                    if (brand || qty > 0) acDetailsArray.push(`${brand || '機型未填'}-${qty}台${price ? `*${price}元` : ''}`);
+                });
+                if (totalAc > 0 && acDetailTotal !== totalAc) { alert(`⚠️ 明細台數不符！`); return; }
+
+                record.acCount = totalAc;
+                record.wmCount = parseInt(document.getElementById('wmCount').value) || 0;
+                record.wtCount = parseInt(document.getElementById('wtCount').value) || 0;
+                record.acBrand = acDetailsArray.join('+');
+            } else {
+                record.carBrand = document.getElementById('carBrand').value.trim();
+                record.licensePlate = document.getElementById('licensePlate').value.trim();
+                record.carType = document.getElementById('carType').value;
+                
+                let carSvcs = [];
+                for (let i = 1; i <= 5; i++) {
+                    const cb = document.getElementById(`carSvc_${i}`);
+                    if (cb.checked) {
+                        const price = document.getElementById(`carPrice_${i}`).value || '0';
+                        carSvcs.push(`${cb.value}*${price}元`);
+                    }
+                }
+                record.carServices = carSvcs.join('+');
+            }
 
             try {
                 if (editingId) {
@@ -1531,29 +1611,10 @@
             } catch (err) { alert('儲存失敗'); }
         });
 
-        function updateTypeFilters(categories) {
-            const container = document.getElementById('typeFilterGroup');
-            let html = `<button type="button" onclick="setTypeFilter('all', this)" class="type-btn flex-1 min-w-fit rounded-lg px-3 py-1.5 text-[10px] font-bold transition-all ${currentTypeFilter === 'all' ? 'bg-slate-200 shadow-sm text-slate-700' : 'text-slate-400'}">全部</button>`;
-            categories.forEach(cat => {
-                const isActive = currentTypeFilter === cat;
-                const activeClasses = isActive ? 'bg-emerald-100 shadow-sm text-slate-700' : 'text-slate-400';
-                html += `<button type="button" onclick="setTypeFilter('${cat}', this)" class="type-btn flex-1 min-w-fit rounded-lg px-3 py-1.5 text-[10px] font-bold transition-all ${activeClasses}">${cat}</button>`;
-            });
-            container.innerHTML = html;
-        }
-
         function updateDatalists() {
-            const catNames = new Set();
             const asNames = new Set();
             const psNames = new Set();
-            
-            const defaultCarServices = ['精緻洗車', '小美容', '大美容', '車內深層清潔', '玻璃鍍膜'];
-            defaultCarServices.forEach(cat => catNames.add(cat));
-
             allRecords.forEach(r => { 
-                const items = normalizeRecord(r);
-                items.forEach(item => { if (item.category) catNames.add(item.category); });
-
                 if (r.assistantDetail) {
                     r.assistantDetail.split(',').forEach(s => {
                         const name = s.split(':')[0];
@@ -1562,17 +1623,10 @@
                 } 
                 if (r.passFrom) psNames.add(r.passFrom);
             });
-            
-            knownCategories = Array.from(catNames).sort();
             knownAssistantNames = Array.from(asNames).sort();
             knownPassNames = Array.from(psNames).sort();
-            
-            document.getElementById('categoryNamesList').innerHTML = knownCategories.map(n => `<option value="${n}">`).join('');
             document.getElementById('assistantNamesList').innerHTML = knownAssistantNames.map(n => `<option value="${n}">`).join('');
             document.getElementById('passNamesList').innerHTML = knownPassNames.map(n => `<option value="${n}">`).join('');
-            
-            updateTypeFilters(knownCategories); 
-            updateQuickCategoryTags();
             updateQuickAssistantTags();
             updateQuickPassTags();
         }
@@ -1602,9 +1656,17 @@
             lucide.createIcons();
         };
 
-        window.showAllAssistantDetails = () => { toggleAssistantModal("小幫手薪資總計 (全期)", allRecords); };
-        window.showYearAssistantDetails = () => { toggleAssistantModal(`${document.getElementById('yearTitle').innerText} 小幫手薪資`, currentYearRecords); };
-        window.showMonthAssistantDetails = () => { toggleAssistantModal(`${document.getElementById('monthTitle').innerText} 小幫手薪資`, currentMonthRecords); };
+        window.showAllAssistantDetails = () => {
+            toggleAssistantModal("小幫手薪資總計 (全期)", allRecords);
+        };
+        window.showYearAssistantDetails = () => {
+            const title = document.getElementById('yearTitle').innerText;
+            toggleAssistantModal(`${title} 小幫手薪資`, currentYearRecords);
+        };
+        window.showMonthAssistantDetails = () => {
+            const title = document.getElementById('monthTitle').innerText;
+            toggleAssistantModal(`${title} 小幫手薪資`, currentMonthRecords);
+        };
 
         function renderAssistantSummary(records) {
             const summary = {};
@@ -1685,15 +1747,15 @@
                 parts.push('全部日期');
             }
             if (kw) parts.push(`關鍵字「${kw}」`);
-            if (type !== 'all') parts.push(type); 
+            if (type !== 'all') parts.push({ ac: '冷氣', wm: '洗衣機', wt: '水塔' }[type] || type);
             if (status !== 'all') parts.push({ completed: '已完成', pending: '待處理' }[status] || status);
             el.innerText = `目前：${parts.join('｜')}`;
         }
 
         function resetFilterButtonStyles(groupSelector, activeValue) {
-            const colorMap = { all: 'bg-slate-200', completed: 'bg-emerald-100', pending: 'bg-amber-100' };
+            const colorMap = { all: 'bg-slate-200', completed: 'bg-emerald-100', pending: 'bg-amber-100', ac: 'bg-emerald-100', wm: 'bg-blue-100', wt: 'bg-purple-100', '轎車': 'bg-emerald-100', '休旅車': 'bg-blue-100', '7人座': 'bg-purple-100' };
             document.querySelectorAll(groupSelector).forEach(btn => {
-                btn.classList.remove('bg-white', 'bg-slate-200', 'bg-emerald-100', 'bg-amber-100', 'shadow-sm', 'text-slate-700');
+                btn.classList.remove('bg-white', 'bg-slate-200', 'bg-emerald-100', 'bg-amber-100', 'bg-blue-100', 'bg-purple-100', 'shadow-sm', 'text-slate-700');
                 btn.classList.add('text-slate-400');
                 const onclickText = btn.getAttribute('onclick') || '';
                 if (onclickText.includes(`'${activeValue}'`)) {
@@ -1708,23 +1770,15 @@
             setDateFilterToCurrentMonth();
             currentTypeFilter = 'all';
             currentStatusFilter = 'all';
-            
-            document.querySelectorAll('.type-btn').forEach(b => {
-                b.classList.remove('bg-emerald-100', 'bg-slate-200', 'shadow-sm', 'text-slate-700');
-                b.classList.add('text-slate-400');
-                if (b.innerText === '全部') {
-                    b.classList.add('bg-slate-200', 'shadow-sm', 'text-slate-700');
-                    b.classList.remove('text-slate-400');
-                }
-            });
+            resetFilterButtonStyles('.type-btn', 'all');
             resetFilterButtonStyles('.status-btn', 'all');
-            
             filterRecords();
             lucide.createIcons();
         };
 
         window.clearDateFilter = window.clearAllFilters;
 
+        // 切換懸浮待收列表面板
         window.toggleFloatingUnpaid = () => {
             const list = document.getElementById('floatingUnpaidList');
             if (list) list.classList.toggle('hidden');
@@ -1744,15 +1798,12 @@
 
         window.setTypeFilter = (val, btn) => {
             currentTypeFilter = val;
+            const typeColors = { all: 'bg-slate-200', ac: 'bg-emerald-100', wm: 'bg-blue-100', wt: 'bg-purple-100', '轎車': 'bg-emerald-100', '休旅車': 'bg-blue-100', '7人座': 'bg-purple-100' };
             document.querySelectorAll('.type-btn').forEach(b => {
-                b.classList.remove('bg-slate-200', 'bg-emerald-100', 'shadow-sm', 'text-slate-700');
+                b.classList.remove('bg-white', 'bg-slate-200', 'bg-emerald-100', 'bg-blue-100', 'bg-purple-100', 'shadow-sm', 'text-slate-700');
                 b.classList.add('text-slate-400');
             });
-            if (val === 'all') {
-                btn.classList.add('bg-slate-200', 'shadow-sm', 'text-slate-700');
-            } else {
-                btn.classList.add('bg-emerald-100', 'shadow-sm', 'text-slate-700');
-            }
+            btn.classList.add(typeColors[val], 'shadow-sm', 'text-slate-700');
             btn.classList.remove('text-slate-400');
             filterRecords();
         };
@@ -1765,15 +1816,14 @@
             const type = currentTypeFilter;
             const status = currentStatusFilter;
 
-            let aRev = 0, aExp = 0, yRev = 0, yExp = 0, fRev = 0, fExp = 0;
+            // aAc 代表冷氣/轎車，aWm 代表洗衣機/休旅車，aWt 代表水塔/7人座 (共用計數變數以保持代碼簡潔)
+            let aAc = 0, aWm = 0, aWt = 0, aRev = 0, aExp = 0;
+            let yRev = 0, yExp = 0, yAc = 0, yWm = 0, yWt = 0;
+            let fRev = 0, fExp = 0, fAc = 0, fWm = 0, fWt = 0;
             let systemUnpaidDetails = [];
             let systemPendingDetails = [];
             let yPassSummary = {};
             let fPassSummary = {};
-
-            let allCatAgg = {}; 
-            let yCatAgg = {};
-            let fCatAgg = {};
 
             currentYearRecords = [];
             currentMonthRecords = [];
@@ -1784,7 +1834,6 @@
             const currentMonthLast = formatLocalDate(new Date(now.getFullYear(), now.getMonth() + 1, 0));
             const isPureCurrentMonth = startDate === currentMonthFirst && endDate === currentMonthLast && !kw && type === 'all' && status === 'all';
             updateFilterStatusText(isPureCurrentMonth, startDate, endDate, kw, type, status);
-            
             const periodTitle = (() => {
                 if (isPureCurrentMonth) return `${String(now.getMonth() + 1).padStart(2, '0')} 月份統計`;
                 if (startDate && endDate) return `${startDate.replaceAll('-', '/')}～${endDate.replaceAll('-', '/')} 篩選統計`;
@@ -1805,8 +1854,13 @@
             const getDateOnly = (record) => (record.bookingTime || '').substring(0, 10);
             const normalizeSearchText = (text) => String(text || '').toLowerCase().replace(/[\s\-－–—_()（）\[\]【】,，.。:：;；/\\]+/g, '');
             const getSearchText = (record) => {
-                const itemsText = normalizeRecord(record).map(i => `${i.category} ${i.title}`).join(' ');
-                const raw = `${record.customerName || ''} ${record.phone || ''} ${record.address || ''} ${record.carBrand || ''} ${record.licensePlate || ''} ${itemsText} ${record.assistantDetail || ''} ${record.passFrom || ''} ${record.note || ''}`.toLowerCase();
+                // 根據模式搜尋不同欄位
+                let raw = "";
+                if (currentAppMode === 'ac') {
+                    raw = `${record.customerName || ''} ${record.phone || ''} ${record.address || ''} ${record.acBrand || ''} ${record.assistantDetail || ''} ${record.passFrom || ''} ${record.note || ''}`.toLowerCase();
+                } else {
+                    raw = `${record.customerName || ''} ${record.phone || ''} ${record.address || ''} ${record.carBrand || ''} ${record.licensePlate || ''} ${record.carType || ''} ${record.carServices || ''} ${record.assistantDetail || ''} ${record.passFrom || ''} ${record.note || ''}`.toLowerCase();
+                }
                 return { raw, compact: normalizeSearchText(raw) };
             };
             const matchesKeywords = (record) => {
@@ -1817,11 +1871,10 @@
                     return searchText.raw.includes(term) || (normalizedTerm && searchText.compact.includes(normalizedTerm));
                 });
             };
-            
             const getQty = (record) => {
-                return normalizeRecord(record).reduce((sum, item) => sum + item.qty, 0);
+                if (currentAppMode === 'ac') return (parseInt(record.acCount) || 0) + (parseInt(record.wmCount) || 0) + (parseInt(record.wtCount) || 0);
+                return 1; // 汽車一筆算 1 台
             };
-
             const addPassSummary = (target, record) => {
                 if (!record.passFrom) return;
                 target[record.passFrom] = (target[record.passFrom] || { qty: 0, rev: 0, exp: 0 });
@@ -1836,9 +1889,13 @@
                 const matchStart = !startDate || (recordDate && recordDate >= startDate);
                 const matchEnd = !endDate || (recordDate && recordDate <= endDate);
                 
-                const items = normalizeRecord(i);
-                const matchType = (type === 'all' || items.some(item => item.category === type));
-                
+                let matchType = false;
+                if (currentAppMode === 'ac') {
+                    matchType = (type === 'all' || (type === 'ac' && (parseInt(i.acCount) || 0) > 0) || (type === 'wm' && (parseInt(i.wmCount) || 0) > 0) || (type === 'wt' && (parseInt(i.wtCount) || 0) > 0));
+                } else {
+                    matchType = (type === 'all' || i.carType === type);
+                }
+
                 const matchStatus = (status === 'all' || i.status === status);
                 return matchSearch && matchStart && matchEnd && matchType && matchStatus;
             });
@@ -1846,7 +1903,17 @@
             allRecords.forEach(r => {
                 const rev = parseInt(r.totalAmount) || 0;
                 const exp = parseInt(r.assistantPay) || 0;
-                const items = normalizeRecord(r);
+                let ac = 0, wm = 0, wt = 0;
+                
+                if (currentAppMode === 'ac') {
+                    ac = parseInt(r.acCount) || 0;
+                    wm = parseInt(r.wmCount) || 0;
+                    wt = parseInt(r.wtCount) || 0;
+                } else {
+                    if (r.carType === '轎車') ac = 1;
+                    if (r.carType === '休旅車') wm = 1;
+                    if (r.carType === '7人座') wt = 1;
+                }
 
                 if (r.payment === 'unpaid') {
                     systemUnpaidDetails.push({ id: r.id, name: r.customerName || '未填姓名', amount: rev });
@@ -1855,47 +1922,34 @@
                     systemPendingDetails.push({ id: r.id, name: r.customerName || '未填姓名', time: (r.bookingTime || '').replace('T', ' ') });
                 }
 
-                aRev += rev; aExp += exp;
-                items.forEach(item => {
-                    allCatAgg[item.category] = (allCatAgg[item.category] || 0) + item.qty;
-                });
+                aAc += ac; aWm += wm; aWt += wt; aRev += rev; aExp += exp;
 
                 const iY = (r.bookingTime || '').split('-')[0];
                 if (iY === filterYear) {
                     currentYearRecords.push(r);
-                    yRev += rev; yExp += exp;
+                    yRev += rev; yExp += exp; yAc += ac; yWm += wm; yWt += wt;
                     addPassSummary(yPassSummary, r);
-                    items.forEach(item => {
-                        yCatAgg[item.category] = (yCatAgg[item.category] || 0) + item.qty;
-                    });
                 }
             });
 
             baseFiltered.forEach(r => {
                 const rev = parseInt(r.totalAmount) || 0;
                 const exp = parseInt(r.assistantPay) || 0;
-                const items = normalizeRecord(r);
-
+                let ac = 0, wm = 0, wt = 0;
+                
+                if (currentAppMode === 'ac') {
+                    ac = parseInt(r.acCount) || 0;
+                    wm = parseInt(r.wmCount) || 0;
+                    wt = parseInt(r.wtCount) || 0;
+                } else {
+                    if (r.carType === '轎車') ac = 1;
+                    if (r.carType === '休旅車') wm = 1;
+                    if (r.carType === '7人座') wt = 1;
+                }
                 currentMonthRecords.push(r);
-                fRev += rev; fExp += exp;
+                fRev += rev; fExp += exp; fAc += ac; fWm += wm; fWt += wt;
                 addPassSummary(fPassSummary, r);
-                items.forEach(item => {
-                    fCatAgg[item.category] = (fCatAgg[item.category] || 0) + item.qty;
-                });
             });
-
-            const allStatsContainer = document.getElementById('allStatsContainer');
-            allStatsContainer.innerHTML = Object.entries(allCatAgg)
-                .sort((a,b) => b[1] - a[1]) 
-                .map(([cat, qty]) => `<div><p class="text-[10px] text-white/65">${cat}</p><p class="text-xl font-bold">${qty}</p></div>`)
-                .join('');
-            if(Object.keys(allCatAgg).length === 0) allStatsContainer.innerHTML = `<div><p class="text-[10px] text-white/65">品項</p><p class="text-xl font-bold">0</p></div>`;
-
-            const formatCatSummary = (aggObj) => {
-                const arr = Object.entries(aggObj).sort((a,b) => b[1] - a[1]);
-                if(arr.length === 0) return '無資料';
-                return arr.map(([cat, qty]) => `${cat}${qty}`).join(' / ');
-            };
 
             const floatingWrap = document.getElementById('floatingUnpaidWrap');
             const floatingUnpaidBadgeCount = document.getElementById('unpaidCountBadge');
@@ -1957,7 +2011,7 @@
                                 <span class="pass-avatar">${k.substring(0, 1)}</span>
                                 <span class="pass-name">${k}</span>
                             </div>
-                            <span class="pass-qty">${summary[k].qty} 單位</span>
+                            <span class="pass-qty">${summary[k].qty} ${currentAppMode === 'ac' ? '台' : '輛'}</span>
                         </div>
                         <div class="pass-metrics">
                             <div class="pass-metric">
@@ -1981,6 +2035,9 @@
             renderPassSummaryCards(yPassSummary, 'passYearSummarySection', 'passYearSummaryList', 'passYearTotal');
             renderPassSummaryCards(fPassSummary, 'passSummarySection', 'passSummaryList', 'passMonthTotal');
 
+            document.getElementById('allAc').innerText = aAc;
+            document.getElementById('allWm').innerText = aWm;
+            document.getElementById('allWt').innerText = aWt;
             document.getElementById('allRev').innerText = `$${aRev.toLocaleString()}`;
             document.getElementById('allExp').innerText = `$${aExp.toLocaleString()}`;
             document.getElementById('allNet').innerText = `$${(aRev - aExp).toLocaleString()}`;
@@ -1988,12 +2045,13 @@
             document.getElementById('yRev').innerText = `$${yRev.toLocaleString()}`;
             document.getElementById('yExp').innerText = `$${yExp.toLocaleString()}`;
             document.getElementById('yNet').innerText = `$${(yRev - yExp).toLocaleString()}`;
-            document.getElementById('yCounts').innerText = formatCatSummary(yCatAgg);
+            const unitType = currentAppMode === 'ac' ? ['冷', '洗', '水'] : ['轎', '休', '7'];
+            document.getElementById('yCounts').innerText = `${unitType[0]}${yAc} / ${unitType[1]}${yWm} / ${unitType[2]}${yWt}`;
 
             document.getElementById('mRev').innerText = `$${fRev.toLocaleString()}`;
             document.getElementById('mExp').innerText = `$${fExp.toLocaleString()}`;
             document.getElementById('mNet').innerText = `$${(fRev - fExp).toLocaleString()}`;
-            document.getElementById('mCounts').innerText = `${formatCatSummary(fCatAgg)}｜${baseFiltered.length} 筆`;
+            document.getElementById('mCounts').innerText = `${unitType[0]}${fAc} / ${unitType[1]}${fWm} / ${unitType[2]}${fWt}｜${baseFiltered.length} 筆`;
 
             renderRecords(baseFiltered.sort((a, b) => (b.bookingTime || '').localeCompare(a.bookingTime || '')));
             lucide.createIcons();
@@ -2003,14 +2061,20 @@
             const list = document.getElementById('recordList');
             list.innerHTML = data.map(i => {
                 let services = [];
-                const items = normalizeRecord(i);
                 
-                items.forEach(item => {
-                    let isCarService = ['精緻洗車', '小美容', '大美容', '車內深層清潔', '玻璃鍍膜'].includes(item.category);
-                    let unit = item.category === '水塔' ? '口' : (item.category === '冷氣' || item.category === '洗衣機' ? '台' : (isCarService ? '' : '單位'));
-                    let qtyStr = (isCarService && item.qty === 1) ? '' : `${item.qty}${unit}`;
-                    services.push(`${item.category}${qtyStr}${item.title ? `：${item.title}` : ''}${item.price ? ` ($${item.price})` : ''}`);
-                });
+                if (currentAppMode === 'ac') {
+                    const acTitle = `冷氣${i.acCount}台`;
+                    if(i.acCount > 0) services.push(i.acBrand ? `${acTitle}：${i.acBrand}` : acTitle);
+                    if(i.wmCount > 0) services.push(`洗衣機${i.wmCount}台`);
+                    if(i.wtCount > 0) services.push(`水塔${i.wtCount}口`);
+                } else {
+                    const plateDisplay = i.licensePlate ? `(${i.licensePlate})` : '';
+                    const brandDisplay = i.carBrand ? `${i.carBrand} ` : '';
+                    services.push(`<span class="font-bold text-blue-700">${brandDisplay}${i.carType} ${plateDisplay}</span>`);
+                    if(i.carServices) {
+                        services.push(i.carServices.replace(/\+/g, '、'));
+                    }
+                }
 
                 let asDisplay = "";
                 if (i.assistantDetail) {
@@ -2027,11 +2091,9 @@
                         <span>${i.bookingTime.replace('T',' ')}</span>
                         ${i.passFrom ? `<span class="text-indigo-500 font-bold flex items-center gap-1"><i data-lucide="forward" class="w-3 h-3"></i>PASS: ${i.passFrom}</span>` : '<span></span>'}
                     </td>
-                    <td data-label="客戶" class="px-6 py-4 flex flex-wrap items-center gap-2">
+                    <td data-label="客戶" class="px-6 py-4 flex items-center gap-2">
                         <span class="font-bold text-slate-900">${i.customerName}</span>
                         ${i.phone ? `<span class="text-[12px] text-slate-400 font-normal flex items-center gap-0.5"><i data-lucide="phone" class="w-3 h-3"></i>${i.phone}</span>` : ''}
-                        ${i.carBrand ? `<span class="text-[11px] font-bold bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded border border-slate-200 ml-1">${i.carBrand}</span>` : ''}
-                        ${i.licensePlate ? `<span class="text-[11px] font-bold bg-slate-700 text-white px-1.5 py-0.5 rounded shadow-sm tracking-wider">${i.licensePlate}</span>` : ''}
                     </td>
                     <td class="px-6 py-1 text-slate-500 text-xs flex items-center gap-1.5">
                         ${i.address ? `
@@ -2042,7 +2104,7 @@
                         ` : ''}
                     </td>
                     <td data-label="服務明細" class="px-6 py-2 text-slate-600">
-                        <div class="leading-tight">${services.join('、')}</div>
+                        <div class="leading-tight">${currentAppMode==='car' ? services.join('<br>') : services.join('、')}</div>
                         ${i.note ? `<div class="text-[11px] text-slate-400 note-display mt-0.5">備註: ${i.note}</div>` : ''}
                         ${asDisplay ? `<div class="text-[11px] text-rose-500 font-medium mt-0.5">${asDisplay}</div>` : ''}
                     </td>
@@ -2099,21 +2161,58 @@
             document.getElementById('customerName').value = r.customerName;
             document.getElementById('phone').value = r.phone || "";
             document.getElementById('address').value = r.address || "";
-            document.getElementById('carBrand').value = r.carBrand || "";
-            document.getElementById('licensePlate').value = r.licensePlate || "";
             document.getElementById('totalAmount').value = r.totalAmount;
             document.getElementById('assistantPay').value = r.assistantPay;
             document.getElementById('note').value = r.note;
             document.getElementById('passFrom').value = r.passFrom || "";
             
-            const serviceContainer = document.getElementById('serviceDetailsContainer');
-            serviceContainer.innerHTML = '';
-            const items = normalizeRecord(r);
-
-            items.forEach(item => {
-                addServiceItemRow(item.category, item.title, item.qty, item.price || "");
-            });
-            if (items.length === 0) addServiceItemRow('', '', 1, '');
+            if (currentAppMode === 'ac') {
+                document.getElementById('acCount').value = r.acCount;
+                document.getElementById('wmCount').value = r.wmCount;
+                document.getElementById('wtCount').value = r.wtCount;
+                const acContainer = document.getElementById('acDetailsContainer');
+                acContainer.innerHTML = '';
+                if (r.acBrand) {
+                    r.acBrand.split('+').forEach(part => {
+                        const m = part.match(/(.*)-(.*)台(?:\*(.*)元)?/);
+                        if (m) {
+                            const div = document.createElement('div');
+                            div.className = "grid grid-cols-12 gap-2 items-center ac-detail-row mb-2";
+                            div.innerHTML = `<div class="col-span-5"><input type="text" value="${m[1]}" class="ac-brand-input w-full rounded-lg p-2 border border-emerald-100 text-sm"></div><div class="col-span-3"><input type="number" value="${m[2]}" onfocus="this.select()" oninput="calcTotalFromDetails()" class="ac-qty-input w-full rounded-lg p-2 border border-emerald-100 text-sm font-bold"></div><div class="col-span-3"><input type="number" value="${m[3]||''}" onfocus="this.select()" oninput="calcTotalFromDetails()" class="ac-price-input w-full rounded-lg p-2 border border-emerald-100 text-sm"></div><div class="col-span-1 text-center"><button type="button" onclick="this.parentElement.parentElement.remove(); calcTotalFromDetails();" class="text-rose-400 font-bold text-lg">&times;</button></div>`;
+                            acContainer.appendChild(div);
+                        }
+                    });
+                }
+                toggleAcBrand();
+            } else {
+                document.getElementById('carBrand').value = r.carBrand || '';
+                document.getElementById('licensePlate').value = r.licensePlate || '';
+                document.getElementById('carType').value = r.carType || '轎車';
+                
+                // 清空並還原汽車服務選項
+                for (let i = 1; i <= 5; i++) {
+                    const cb = document.getElementById(`carSvc_${i}`);
+                    const input = document.getElementById(`carPrice_${i}`);
+                    cb.checked = false;
+                    input.classList.add('hidden');
+                    input.value = '';
+                }
+                if (r.carServices) {
+                    r.carServices.split('+').forEach(svc => {
+                        const [svcName, amtStr] = svc.split('*');
+                        const amt = amtStr ? amtStr.replace('元', '') : '';
+                        for (let i = 1; i <= 5; i++) {
+                            const cb = document.getElementById(`carSvc_${i}`);
+                            if (cb.value === svcName) {
+                                cb.checked = true;
+                                const input = document.getElementById(`carPrice_${i}`);
+                                input.classList.remove('hidden');
+                                input.value = amt;
+                            }
+                        }
+                    });
+                }
+            }
 
             const asContainer = document.getElementById('assistantDetailsContainer');
             asContainer.innerHTML = '';
@@ -2121,8 +2220,6 @@
                 r.assistantDetail.split(',').forEach(s => { const [name, amt] = s.split(':'); addAssistantRow(name, amt); });
             }
             
-            applyFormModeUI();
-            updateQuickCategoryTags();
             updateQuickAssistantTags();
             updateQuickPassTags();
             calcFormNet();
@@ -2141,10 +2238,8 @@
             endInput.value = formatLocalDate(last);
             filterRecords();
         };
-
-        window.deleteRec = async (id) => { 
-            if(confirm('確定要刪除嗎？')) await deleteDoc(getRecordDoc(id)); 
-        };
+        window.quickFilterUnpaid = () => { /* 此功能現改為由懸浮驚嘆號控制 */ };
+        window.deleteRec = async (id) => { if(confirm('確定要刪除嗎？')) await deleteDoc(getRecordDoc(id)); };
 
         window.downloadRec = (id) => {
             const el = document.getElementById(`rec-${id}`);
@@ -2278,7 +2373,8 @@
                     const url = URL.createObjectURL(blob);
                     const link = document.createElement('a');
                     link.href = url;
-                    link.download = `清洗紀錄_${name}_${id.substring(0,4)}.png`;
+                    const prefix = currentAppMode === 'ac' ? '冷氣' : '汽車';
+                    link.download = `${prefix}紀錄_${name}_${id.substring(0,4)}.png`;
                     
                     document.body.appendChild(link);
                     link.click();
@@ -2293,4 +2389,3 @@
     </script>
 </body>
 </html>
-```eof
