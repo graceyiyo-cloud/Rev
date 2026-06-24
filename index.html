@@ -1363,8 +1363,9 @@
             document.getElementById('yCountsGroup').classList.toggle('hidden', isSummary);
             document.getElementById('mCountsGroup').classList.toggle('hidden', isSummary);
             
-            // 本次修正：總計模式保留篩選面板功能，只隱藏不適用的「品項過濾按鈕」
-            document.getElementById('typeFilterGroup').classList.toggle('hidden', isSummary);
+            // 總計模式的篩選：只需要期間篩選，隱藏關鍵字搜尋與品項/進度過濾按鈕群組
+            document.getElementById('searchKeyword').parentElement.classList.toggle('hidden', isSummary);
+            document.getElementById('typeFilterGroup').parentElement.classList.toggle('hidden', isSummary);
             document.querySelector('.overflow-x-auto').classList.toggle('hidden', isSummary);
 
             // 3. 更新篩選按鈕
