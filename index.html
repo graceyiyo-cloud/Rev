@@ -832,6 +832,12 @@
                     <i data-lucide="clipboard-list" class="w-6 h-6"></i> 新增紀錄
                 </h2>
                 <form id="recordForm" class="space-y-4">
+                    <!-- 本次新增：施工類型切換 -->
+                    <div class="flex gap-2 p-1 bg-slate-100 rounded-xl mb-4">
+                        <button type="button" onclick="setWorkType('ac')" id="btnTypeAc" class="flex-1 py-2 text-sm font-bold rounded-lg transition-all shadow-sm bg-white text-emerald-600 border border-slate-200">冷氣清洗</button>
+                        <button type="button" onclick="setWorkType('car')" id="btnTypeCar" class="flex-1 py-2 text-sm font-bold rounded-lg transition-all text-slate-400 hover:text-slate-600">汽車美容</button>
+                    </div>
+
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">預約日期時間</label>
@@ -853,11 +859,16 @@
                         </div>
                     </div>
                     
-                    <!-- 本次修正：加入車輛廠牌與車牌號碼，無縫融入原版排版 -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">車輛廠牌</label>
+                            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">車輛廠牌 / 車型</label>
                             <input type="text" id="carBrand" placeholder="例如：Toyota, BMW" class="block w-full border-slate-200 rounded-xl p-3 border text-sm outline-none focus:ring-2 focus:ring-emerald-500/20">
+                            <!-- 本次新增：汽車模式專用的車型快速選擇 -->
+                            <div id="carTypeButtons" class="hidden flex flex-wrap gap-2 mt-2">
+                                <button type="button" onclick="appendCarType('轎車')" class="px-2 py-1 bg-white border border-slate-200 text-slate-600 rounded text-[10px] hover:bg-slate-50 transition-colors font-bold">+ 轎車</button>
+                                <button type="button" onclick="appendCarType('休旅車')" class="px-2 py-1 bg-white border border-slate-200 text-slate-600 rounded text-[10px] hover:bg-slate-50 transition-colors font-bold">+ 休旅車</button>
+                                <button type="button" onclick="appendCarType('7人座')" class="px-2 py-1 bg-white border border-slate-200 text-slate-600 rounded text-[10px] hover:bg-slate-50 transition-colors font-bold">+ 7人座</button>
+                            </div>
                         </div>
                         <div>
                             <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">車牌號碼</label>
@@ -865,13 +876,24 @@
                         </div>
                     </div>
 
+                    <!-- 本次修正：汽車模式專屬的美容類別按鈕區塊 -->
+                    <div id="carServiceButtons" class="hidden space-y-2 bg-blue-50/50 p-4 rounded-xl border border-blue-100">
+                        <label class="block text-xs font-bold text-blue-600 uppercase tracking-wider"><i data-lucide="car" class="lucide mr-1"></i> 選擇美容類別 (可複選)</label>
+                        <div class="flex flex-wrap gap-2 pt-1">
+                            <button type="button" onclick="addCarService('精緻洗車')" class="px-3 py-1.5 bg-white border border-blue-200 text-blue-700 rounded-lg text-[11px] hover:bg-blue-50 transition-colors font-bold shadow-sm">+ 精緻洗車</button>
+                            <button type="button" onclick="addCarService('小美容')" class="px-3 py-1.5 bg-white border border-blue-200 text-blue-700 rounded-lg text-[11px] hover:bg-blue-50 transition-colors font-bold shadow-sm">+ 小美容</button>
+                            <button type="button" onclick="addCarService('大美容')" class="px-3 py-1.5 bg-white border border-blue-200 text-blue-700 rounded-lg text-[11px] hover:bg-blue-50 transition-colors font-bold shadow-sm">+ 大美容</button>
+                            <button type="button" onclick="addCarService('車內深層清潔')" class="px-3 py-1.5 bg-white border border-blue-200 text-blue-700 rounded-lg text-[11px] hover:bg-blue-50 transition-colors font-bold shadow-sm">+ 車內深層清潔</button>
+                            <button type="button" onclick="addCarService('玻璃鍍膜')" class="px-3 py-1.5 bg-white border border-blue-200 text-blue-700 rounded-lg text-[11px] hover:bg-blue-50 transition-colors font-bold shadow-sm">+ 玻璃鍍膜</button>
+                        </div>
+                    </div>
+
                     <div id="serviceItemSection" class="space-y-2 bg-emerald-50/30 p-4 rounded-xl border border-emerald-100">
                         <div class="flex justify-between items-center mb-1">
                             <label class="block text-xs font-bold text-emerald-600 uppercase tracking-wider"><i data-lucide="layers" class="lucide mr-1"></i> 營業品項明細</label>
-                            <button type="button" onclick="addServiceItemRow()" class="text-[10px] bg-emerald-600 text-white px-2 py-1 rounded shadow-sm">+ 增加品項</button>
+                            <button type="button" onclick="addServiceItemRow()" class="text-[10px] bg-emerald-600 text-white px-2 py-1 rounded shadow-sm">+ 增加明細</button>
                         </div>
                         <div id="serviceDetailsContainer" class="space-y-2"></div>
-                        <!-- 本次修正：加入營業品項的一鍵快選區塊 -->
                         <div id="quickCategoryTags" class="flex flex-wrap gap-2 mt-2 pt-2 border-t border-emerald-100/50"></div>
                     </div>
                     <datalist id="categoryNamesList"></datalist>
@@ -1054,7 +1076,6 @@
                                 <div class="absolute inset-y-0 left-3 flex items-center pointer-events-none text-slate-400">
                                     <i data-lucide="search" class="w-4 h-4"></i>
                                 </div>
-                                <!-- 本次修正：提示可搜尋車牌 -->
                                 <input type="text" id="searchKeyword" oninput="filterRecords()" placeholder="可輸入：姓名、車牌、廠牌、電話、品項、小幫手..." class="w-full bg-slate-50 border-none rounded-xl p-3 pl-10 text-sm outline-none focus:ring-2 focus:ring-slate-100">
                             </div>
                             <div class="date-filter-row">
@@ -1143,7 +1164,7 @@
 
         let allRecords = [];
         let editingId = null;
-        let knownCategories = []; // 動態品項清單
+        let knownCategories = []; 
         let knownAssistantNames = []; 
         let knownPassNames = [];
         let snapshotUnsubscribe = null;
@@ -1153,6 +1174,7 @@
         
         let currentStatusFilter = 'all';
         let currentTypeFilter = 'all';
+        let currentWorkType = 'ac'; // 本次新增：記錄當前施工類型狀態
 
         document.addEventListener('DOMContentLoaded', () => {
             lucide.createIcons();
@@ -1246,11 +1268,56 @@
             lucide.createIcons(); 
         };
 
+        // 本次新增：切換施工類型，控制 UI 顯示邏輯
+        window.setWorkType = (type) => {
+            currentWorkType = type;
+            const btnAc = document.getElementById('btnTypeAc');
+            const btnCar = document.getElementById('btnTypeCar');
+            const carTypeButtons = document.getElementById('carTypeButtons');
+            const carServiceButtons = document.getElementById('carServiceButtons');
+            const quickCategoryTags = document.getElementById('quickCategoryTags');
+
+            if (type === 'ac') {
+                btnAc.className = "flex-1 py-2 text-sm font-bold rounded-lg transition-all shadow-sm bg-white text-emerald-600 border border-slate-200";
+                btnCar.className = "flex-1 py-2 text-sm font-bold rounded-lg transition-all text-slate-400 hover:text-slate-600 border border-transparent";
+                carTypeButtons.classList.add('hidden');
+                carServiceButtons.classList.add('hidden');
+                quickCategoryTags.classList.remove('hidden');
+                document.getElementById('serviceDetailsContainer').innerHTML = '';
+                addServiceItemRow('', '', 1, '');
+            } else {
+                btnCar.className = "flex-1 py-2 text-sm font-bold rounded-lg transition-all shadow-sm bg-white text-blue-600 border border-slate-200";
+                btnAc.className = "flex-1 py-2 text-sm font-bold rounded-lg transition-all text-slate-400 hover:text-slate-600 border border-transparent";
+                carTypeButtons.classList.remove('hidden');
+                carServiceButtons.classList.remove('hidden');
+                quickCategoryTags.classList.add('hidden');
+                document.getElementById('serviceDetailsContainer').innerHTML = ''; // 切換到汽車模式時先清空明細
+            }
+            calcTotalFromDetails();
+        };
+
+        // 本次新增：點擊車型按鈕，自動帶入輸入框
+        window.appendCarType = (typeStr) => {
+            const input = document.getElementById('carBrand');
+            const currentVal = input.value.trim();
+            if (currentVal) {
+                if (!currentVal.includes(typeStr)) {
+                    input.value = currentVal + ' ' + typeStr;
+                }
+            } else {
+                input.value = typeStr;
+            }
+        };
+
+        // 本次新增：點擊美容類別，自動新增一筆明細讓使用者填寫金額
+        window.addCarService = (serviceName) => {
+            addServiceItemRow(serviceName, '', 1, '');
+        };
+
         window.prepareNewForm = () => {
             editingId = null;
             document.getElementById('recordForm').reset();
-            document.getElementById('serviceDetailsContainer').innerHTML = '';
-            addServiceItemRow('', '', 1, ''); 
+            setWorkType('ac'); // 預設回到冷氣模式
             document.getElementById('assistantDetailsContainer').innerHTML = '';
             document.getElementById('passFrom').value = '';
             document.getElementById('formNetProfit').value = '$0';
@@ -1263,29 +1330,35 @@
         window.addServiceItemRow = (cat = "", title = "", qty = 1, price = "") => {
             const container = document.getElementById('serviceDetailsContainer');
             const div = document.createElement('div');
+            // 本次修改：汽車模式時，隱藏「說明」與「數量」欄位，放大「品項」與「單價」
+            const isCarMode = currentWorkType === 'car';
             div.className = "grid grid-cols-12 gap-2 items-center service-detail-row mb-2";
             div.innerHTML = `
-                <div class="col-span-4"><input type="text" value="${cat}" list="categoryNamesList" placeholder="品項(如洗車)" class="svc-cat-input w-full rounded-lg p-2 border border-emerald-100 text-sm font-bold text-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"></div>
-                <div class="col-span-3"><input type="text" value="${title}" placeholder="說明" class="svc-title-input w-full rounded-lg p-2 border border-emerald-100 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20"></div>
-                <div class="col-span-2"><input type="number" value="${qty}" min="1" placeholder="數量" onfocus="this.select()" oninput="calcTotalFromDetails()" class="svc-qty-input w-full rounded-lg p-2 border border-emerald-100 text-sm font-bold text-center focus:outline-none focus:ring-2 focus:ring-emerald-500/20"></div>
-                <div class="col-span-2"><input type="number" value="${price}" placeholder="單價" onfocus="this.select()" oninput="calcTotalFromDetails()" class="svc-price-input w-full rounded-lg p-2 border border-emerald-100 text-sm text-center focus:outline-none focus:ring-2 focus:ring-emerald-500/20"></div>
+                <div class="${isCarMode ? 'col-span-7' : 'col-span-4'}"><input type="text" value="${cat}" list="categoryNamesList" placeholder="品項" class="svc-cat-input w-full rounded-lg p-2 border border-emerald-100 text-sm font-bold ${isCarMode ? 'text-blue-700' : 'text-emerald-700'} focus:outline-none focus:ring-2 focus:ring-emerald-500/20"></div>
+                <div class="col-span-3 ${isCarMode ? 'hidden' : ''}"><input type="text" value="${title}" placeholder="說明" class="svc-title-input w-full rounded-lg p-2 border border-emerald-100 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20"></div>
+                <div class="col-span-2 ${isCarMode ? 'hidden' : ''}"><input type="number" value="${qty}" min="1" placeholder="數量" onfocus="this.select()" oninput="calcTotalFromDetails()" class="svc-qty-input w-full rounded-lg p-2 border border-emerald-100 text-sm font-bold text-center focus:outline-none focus:ring-2 focus:ring-emerald-500/20"></div>
+                <div class="${isCarMode ? 'col-span-4' : 'col-span-2'}"><input type="number" value="${price}" placeholder="${isCarMode ? '請輸入金額' : '單價'}" onfocus="this.select()" oninput="calcTotalFromDetails()" class="svc-price-input w-full rounded-lg p-2 border border-emerald-100 text-sm text-center focus:outline-none focus:ring-2 focus:ring-emerald-500/20"></div>
                 <div class="col-span-1 text-center"><button type="button" onclick="this.parentElement.parentElement.remove(); calcTotalFromDetails();" class="text-rose-400 font-bold text-lg">&times;</button></div>
             `;
             container.appendChild(div);
+            // 汽車模式如果新增項目，焦點自動跳到價格框方便直接輸入金額
+            if(isCarMode) {
+                setTimeout(() => div.querySelector('.svc-price-input').focus(), 50);
+            }
             lucide.createIcons();
         };
 
         window.calcTotalFromDetails = () => {
             let total = 0;
             document.querySelectorAll('.service-detail-row').forEach(row => {
-                const qty = parseInt(row.querySelector('.svc-qty-input').value) || 0;
+                const qtyInput = row.querySelector('.svc-qty-input');
+                const qty = qtyInput ? (parseInt(qtyInput.value) || 1) : 1; // 汽車模式隱藏數量，預設為1
                 const price = parseInt(row.querySelector('.svc-price-input').value) || 0;
                 total += (qty * price);
             });
-            if (total > 0) {
-                document.getElementById('totalAmount').value = total;
-                calcFormNet();
-            }
+            // 只要有明細，就自動計算並填入總額 (允許為0)
+            document.getElementById('totalAmount').value = total;
+            calcFormNet();
         };
 
         window.addAssistantRow = (name = "", amount = "") => {
@@ -1315,7 +1388,6 @@
             document.getElementById('formNetProfit').value = `$${(rev - exp).toLocaleString()}`;
         };
 
-        // 本次修正：新增品項的一鍵快選區塊生成
         window.updateQuickCategoryTags = () => {
             const container = document.getElementById('quickCategoryTags');
             if (knownCategories.length === 0) {
@@ -1370,10 +1442,12 @@
 
             document.querySelectorAll('.service-detail-row').forEach(row => {
                 const cat = row.querySelector('.svc-cat-input').value.trim();
-                const title = row.querySelector('.svc-title-input').value.trim();
-                const qty = parseInt(row.querySelector('.svc-qty-input').value) || 0;
+                const titleInput = row.querySelector('.svc-title-input');
+                const title = titleInput ? titleInput.value.trim() : '';
+                const qtyInput = row.querySelector('.svc-qty-input');
+                const qty = qtyInput ? (parseInt(qtyInput.value) || 1) : 1; 
                 const price = row.querySelector('.svc-price-input').value;
-                if (cat && qty > 0) {
+                if (cat) { // 只要有品項名稱就寫入，不強制數量要大於0 (因為汽車模式隱藏數量)
                     serviceItems.push({ category: cat, title, qty, price: price ? parseInt(price) : null });
 
                     if (cat === '冷氣') {
@@ -1448,6 +1522,10 @@
             const asNames = new Set();
             const psNames = new Set();
             
+            // 內建汽車美容選單，即使沒打過也會顯示在一般快選區塊裡
+            const defaultCarServices = ['精緻洗車', '小美容', '大美容', '車內深層清潔', '玻璃鍍膜'];
+            defaultCarServices.forEach(cat => catNames.add(cat));
+
             allRecords.forEach(r => { 
                 const items = normalizeRecord(r);
                 items.forEach(item => { if (item.category) catNames.add(item.category); });
@@ -1704,7 +1782,6 @@
             const normalizeSearchText = (text) => String(text || '').toLowerCase().replace(/[\s\-－–—_()（）\[\]【】,，.。:：;；/\\]+/g, '');
             const getSearchText = (record) => {
                 const itemsText = normalizeRecord(record).map(i => `${i.category} ${i.title}`).join(' ');
-                // 本次修正：將車廠與車牌加入搜尋池
                 const raw = `${record.customerName || ''} ${record.phone || ''} ${record.address || ''} ${record.carBrand || ''} ${record.licensePlate || ''} ${itemsText} ${record.assistantDetail || ''} ${record.passFrom || ''} ${record.note || ''}`.toLowerCase();
                 return { raw, compact: normalizeSearchText(raw) };
             };
@@ -1905,8 +1982,11 @@
                 const items = normalizeRecord(i);
                 
                 items.forEach(item => {
-                    let unit = item.category === '水塔' ? '口' : (item.category === '冷氣' || item.category === '洗衣機' ? '台' : '單位');
-                    services.push(`${item.category}${item.qty}${unit}${item.title ? `：${item.title}` : ''}`);
+                    // 本次修正：若為汽車美容項目，數量通常是 1，不強制顯示單位，讓排版更清爽
+                    let isCarService = ['精緻洗車', '小美容', '大美容', '車內深層清潔', '玻璃鍍膜'].includes(item.category);
+                    let unit = item.category === '水塔' ? '口' : (item.category === '冷氣' || item.category === '洗衣機' ? '台' : (isCarService ? '' : '單位'));
+                    let qtyStr = (isCarService && item.qty === 1) ? '' : `${item.qty}${unit}`;
+                    services.push(`${item.category}${qtyStr}${item.title ? `：${item.title}` : ''}${item.price ? ` ($${item.price})` : ''}`);
                 });
 
                 let asDisplay = "";
@@ -1924,7 +2004,6 @@
                         <span>${i.bookingTime.replace('T',' ')}</span>
                         ${i.passFrom ? `<span class="text-indigo-500 font-bold flex items-center gap-1"><i data-lucide="forward" class="w-3 h-3"></i>PASS: ${i.passFrom}</span>` : '<span></span>'}
                     </td>
-                    <!-- 本次修正：排版無縫融入廠牌與車牌 -->
                     <td data-label="客戶" class="px-6 py-4 flex flex-wrap items-center gap-2">
                         <span class="font-bold text-slate-900">${i.customerName}</span>
                         ${i.phone ? `<span class="text-[12px] text-slate-400 font-normal flex items-center gap-0.5"><i data-lucide="phone" class="w-3 h-3"></i>${i.phone}</span>` : ''}
@@ -1997,7 +2076,6 @@
             document.getElementById('customerName').value = r.customerName;
             document.getElementById('phone').value = r.phone || "";
             document.getElementById('address').value = r.address || "";
-            // 本次修正：編輯時正確帶入車子廠牌與車牌
             document.getElementById('carBrand').value = r.carBrand || "";
             document.getElementById('licensePlate').value = r.licensePlate || "";
             document.getElementById('totalAmount').value = r.totalAmount;
@@ -2008,6 +2086,11 @@
             const serviceContainer = document.getElementById('serviceDetailsContainer');
             serviceContainer.innerHTML = '';
             const items = normalizeRecord(r);
+            
+            // 本次新增：判斷編輯模式要套用冷氣還是汽車 UI
+            const hasCarService = items.some(item => ['精緻洗車', '小美容', '大美容', '車內深層清潔', '玻璃鍍膜'].includes(item.category) || r.carBrand || r.licensePlate);
+            setWorkType(hasCarService ? 'car' : 'ac');
+
             items.forEach(item => {
                 addServiceItemRow(item.category, item.title, item.qty, item.price || "");
             });
@@ -2190,3 +2273,4 @@
     </script>
 </body>
 </html>
+```eof
