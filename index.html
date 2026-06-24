@@ -828,7 +828,7 @@
                     <!-- 系統切換 Toggle (新增總計) -->
                     <div class="bg-slate-700/50 p-1 rounded-lg flex items-center text-xs font-bold border border-slate-500/30">
                         <button onclick="switchAppMode('ac')" id="navAcBtn" class="px-3 py-1 rounded bg-slate-500 text-white shadow-sm transition-all">冷氣</button>
-                        <button onclick="switchAppMode('car')" id="navCarBtn" class="px-3 py-1 rounded text-slate-300 hover:text-white transition-all">汽車</button>
+                        <button onclick="switchAppMode('car')" id="navCarBtn" class="px-3 py-1 rounded bg-slate-500 text-white shadow-sm transition-all">汽車</button>
                         <button onclick="switchAppMode('summary')" id="navSummaryBtn" class="px-3 py-1 rounded text-slate-300 hover:text-white transition-all">總計</button>
                     </div>
                 </div>
@@ -1034,7 +1034,7 @@
                     </div>
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-2 relative z-10">
                         <div class="bg-white/60 p-2 rounded-xl text-center border border-amber-200/50">
-                            <span class="block text-[10px] font-bold text-amber-700/70 mb-0.5">預算上限(10%)</span>
+                            <span class="flex justify-center items-center text-[10px] font-bold text-amber-700/70 mb-0.5">預算上限(<input type="number" id="budgetPercent" value="10" min="0" max="100" oninput="filterRecords()" class="w-5 bg-transparent border-b border-amber-400/50 text-center outline-none font-black text-amber-800 p-0 mx-0.5 leading-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none">%)</span>
                             <span class="block text-sm font-black text-amber-600" id="procBudget">$0</span>
                         </div>
                         <div class="bg-white/60 p-2 rounded-xl text-center border border-amber-200/50">
@@ -1362,10 +1362,12 @@
             document.getElementById('allCountsGrid').classList.toggle('hidden', isSummary);
             document.getElementById('yCountsGroup').classList.toggle('hidden', isSummary);
             document.getElementById('mCountsGroup').classList.toggle('hidden', isSummary);
-            document.getElementById('filterShell').classList.toggle('hidden', isSummary);
+            
+            // 本次修正：總計模式保留篩選面板功能，只隱藏不適用的「品項過濾按鈕」
+            document.getElementById('typeFilterGroup').classList.toggle('hidden', isSummary);
             document.querySelector('.overflow-x-auto').classList.toggle('hidden', isSummary);
 
-            // 3. 更新篩選按鈕 (總計模式不顯示篩選區，故保留舊態即可)
+            // 3. 更新篩選按鈕
             if (mode === 'ac') {
                 document.getElementById('statsLabel1').innerText = '冷氣';
                 document.getElementById('statsLabel2').innerText = '洗衣機';
@@ -2093,8 +2095,11 @@
                 const matchStart = !startDate || (recordDate && recordDate >= startDate);
                 const matchEnd = !endDate || (recordDate && recordDate <= endDate);
                 
+                // 本次修正：總計模式下不過濾品項
                 let matchType = false;
-                if (currentAppMode === 'ac' || i._type === 'ac') {
+                if (currentAppMode === 'summary') {
+                    matchType = true;
+                } else if (currentAppMode === 'ac' || i._type === 'ac') {
                     matchType = (type === 'all' || (type === 'ac' && (parseInt(i.acCount) || 0) > 0) || (type === 'wm' && (parseInt(i.wmCount) || 0) > 0) || (type === 'wt' && (parseInt(i.wtCount) || 0) > 0));
                 } else {
                     matchType = (type === 'all' || i.carType === type);
@@ -2161,7 +2166,12 @@
                 dataProc.forEach(p => {
                     procTotal += (parseInt(p.amount) || 0);
                 });
-                const budget = Math.floor(aRev * 0.1);
+                
+                // 本次修改：取得輸入框的百分比，防呆處理如果清空或輸入錯誤則視為 0
+                const pctStr = document.getElementById('budgetPercent').value;
+                const pct = isNaN(parseInt(pctStr)) ? 0 : parseInt(pctStr);
+                
+                const budget = Math.floor(aRev * (pct / 100));
                 const remain = budget - procTotal;
                 const actualNet = (aRev - aExp) - procTotal;
 
