@@ -7,13 +7,13 @@
 
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="冷氣紀錄">
+    <meta name="apple-mobile-web-app-title" content="清洗紀錄">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#475569">
 
     <link rel="apple-touch-icon" href="./icon.png">
     
-    <link rel="manifest" href='data:application/manifest+json,{"name":"冷氣清洗紀錄","short_name":"冷紀錄","start_url":".","display":"standalone","background_color":"#ffffff","theme_color":"#475569","icons":[{"src":"./icon.png","sizes":"512x512","type":"image/png"}]}'>
+    <link rel="manifest" href='data:application/manifest+json,{"name":"冷氣清洗紀錄","short_name":"清洗紀錄","start_url":".","display":"standalone","background_color":"#ffffff","theme_color":"#475569","icons":[{"src":"./icon.png","sizes":"512x512","type":"image/png"}]}'>
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -808,10 +808,17 @@
     </section>
 
     <div id="mainApp" class="hidden">
-        <nav class="bg-slate-600 text-white py-2 px-4 shadow-md">
-            <div class="container mx-auto flex justify-between items-center">
-                <h1 class="text-lg font-bold tracking-widest">冷氣清洗紀錄</h1>
-                <div class="flex space-x-2">
+        <!-- 本次修正：頂部導航列新增全域模式切換，且兼顧手機版排版 -->
+        <nav class="bg-slate-600 text-white py-2 px-2 md:px-4 shadow-md">
+            <div class="container mx-auto flex flex-col md:flex-row justify-between items-center gap-2">
+                <div class="flex w-full md:w-auto justify-between md:justify-start items-center gap-3">
+                    <h1 class="text-base md:text-lg font-bold tracking-widest whitespace-nowrap">清洗紀錄</h1>
+                    <div class="flex bg-slate-700/50 rounded-lg p-0.5 border border-slate-500/50">
+                        <button onclick="setGlobalMode('ac')" id="navModeAc" class="px-3 py-1 text-[11px] md:text-xs font-bold rounded-md bg-slate-500 text-white shadow-sm transition-all whitespace-nowrap">冷氣清洗</button>
+                        <button onclick="setGlobalMode('car')" id="navModeCar" class="px-3 py-1 text-[11px] md:text-xs font-bold rounded-md text-slate-400 hover:text-white transition-all whitespace-nowrap">汽車美容</button>
+                    </div>
+                </div>
+                <div class="flex w-full md:w-auto justify-end space-x-1 md:space-x-2">
                     <button onclick="showPage('listPage')" class="flex items-center px-3 py-1.5 bg-slate-500 hover:bg-slate-400 border border-slate-400/50 rounded-lg transition-all text-[0.8rem] font-medium active:scale-95 whitespace-nowrap">
                         <i data-lucide="list" class="btn-icon"></i>清單
                     </button>
@@ -832,12 +839,6 @@
                     <i data-lucide="clipboard-list" class="w-6 h-6"></i> 新增紀錄
                 </h2>
                 <form id="recordForm" class="space-y-4">
-                    <!-- 本次新增：施工類型切換 -->
-                    <div class="flex gap-2 p-1 bg-slate-100 rounded-xl mb-4">
-                        <button type="button" onclick="setWorkType('ac')" id="btnTypeAc" class="flex-1 py-2 text-sm font-bold rounded-lg transition-all shadow-sm bg-white text-emerald-600 border border-slate-200">冷氣清洗</button>
-                        <button type="button" onclick="setWorkType('car')" id="btnTypeCar" class="flex-1 py-2 text-sm font-bold rounded-lg transition-all text-slate-400 hover:text-slate-600">汽車美容</button>
-                    </div>
-
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">預約日期時間</label>
@@ -859,12 +860,12 @@
                         </div>
                     </div>
                     
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- 本次修正：汽車專屬欄位（冷氣模式下自動隱藏） -->
+                    <div id="carSpecificFields" class="grid grid-cols-1 md:grid-cols-2 gap-4 hidden">
                         <div>
                             <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">車輛廠牌 / 車型</label>
                             <input type="text" id="carBrand" placeholder="例如：Toyota, BMW" class="block w-full border-slate-200 rounded-xl p-3 border text-sm outline-none focus:ring-2 focus:ring-emerald-500/20">
-                            <!-- 本次新增：汽車模式專用的車型快速選擇 -->
-                            <div id="carTypeButtons" class="hidden flex flex-wrap gap-2 mt-2">
+                            <div id="carTypeButtons" class="flex flex-wrap gap-2 mt-2">
                                 <button type="button" onclick="appendCarType('轎車')" class="px-2 py-1 bg-white border border-slate-200 text-slate-600 rounded text-[10px] hover:bg-slate-50 transition-colors font-bold">+ 轎車</button>
                                 <button type="button" onclick="appendCarType('休旅車')" class="px-2 py-1 bg-white border border-slate-200 text-slate-600 rounded text-[10px] hover:bg-slate-50 transition-colors font-bold">+ 休旅車</button>
                                 <button type="button" onclick="appendCarType('7人座')" class="px-2 py-1 bg-white border border-slate-200 text-slate-600 rounded text-[10px] hover:bg-slate-50 transition-colors font-bold">+ 7人座</button>
@@ -1156,7 +1157,11 @@
         const auth = getAuth(app);
         const provider = new GoogleAuthProvider();
         
+        // 本次修正：導入全域模式變數，控制整個系統要在哪個資料庫運作
+        let globalMode = 'ac'; // 'ac' | 'car'
+        let currentUser = null;
         let currentCollectionName = "cleaningRecords";
+        
         const getRecordsCol = () => collection(db, currentCollectionName);
         const getRecordDoc = (id) => doc(db, currentCollectionName, id);
 
@@ -1174,25 +1179,28 @@
         
         let currentStatusFilter = 'all';
         let currentTypeFilter = 'all';
-        let currentWorkType = 'ac'; // 本次新增：記錄當前施工類型狀態
 
         document.addEventListener('DOMContentLoaded', () => {
             lucide.createIcons();
         });
 
+        // 本次修正：更新集合名稱，將冷氣與汽車強制拆分不同資料庫
+        function updateCollectionName() {
+            if (!currentUser) return;
+            let baseName = allowedEmails.includes(currentUser.email.toLowerCase()) ? "cleaningRecords" : `cleaningRecords_${currentUser.uid}`;
+            currentCollectionName = globalMode === 'car' ? `${baseName}_car` : baseName;
+        }
+
         onAuthStateChanged(auth, (user) => {
             if (user) {
-                if (allowedEmails.includes(user.email.toLowerCase())) {
-                    currentCollectionName = "cleaningRecords";
-                } else {
-                    currentCollectionName = `cleaningRecords_${user.uid}`;
-                }
-
+                currentUser = user;
+                updateCollectionName();
                 document.getElementById('authPage').classList.add('hidden');
                 document.getElementById('mainApp').classList.remove('hidden');
                 document.getElementById('authError').classList.add('hidden');
                 startDataSubscription();
             } else {
+                currentUser = null;
                 document.getElementById('authPage').classList.remove('hidden');
                 document.getElementById('mainApp').classList.add('hidden');
                 if (snapshotUnsubscribe) {
@@ -1221,11 +1229,13 @@
             }
         };
 
+        // 本次修正：切換資料庫時，取消舊監聽並重新綁定
         function startDataSubscription() {
             if (snapshotUnsubscribe) {
                 snapshotUnsubscribe();
                 snapshotUnsubscribe = null;
             }
+            updateCollectionName();
             snapshotUnsubscribe = onSnapshot(getRecordsCol(), (snap) => {
                 allRecords = snap.docs.map(d => ({ id: d.id, ...d.data() }));
                 updateDatalists();
@@ -1268,35 +1278,46 @@
             lucide.createIcons(); 
         };
 
-        // 本次新增：切換施工類型，控制 UI 顯示邏輯
-        window.setWorkType = (type) => {
-            currentWorkType = type;
-            const btnAc = document.getElementById('btnTypeAc');
-            const btnCar = document.getElementById('btnTypeCar');
-            const carTypeButtons = document.getElementById('carTypeButtons');
+        // 本次新增：切換表單在不同模式下的 UI 顯示
+        function applyFormModeUI() {
+            const carFields = document.getElementById('carSpecificFields');
             const carServiceButtons = document.getElementById('carServiceButtons');
             const quickCategoryTags = document.getElementById('quickCategoryTags');
 
-            if (type === 'ac') {
-                btnAc.className = "flex-1 py-2 text-sm font-bold rounded-lg transition-all shadow-sm bg-white text-emerald-600 border border-slate-200";
-                btnCar.className = "flex-1 py-2 text-sm font-bold rounded-lg transition-all text-slate-400 hover:text-slate-600 border border-transparent";
-                carTypeButtons.classList.add('hidden');
+            if (globalMode === 'ac') {
+                carFields.classList.add('hidden');
                 carServiceButtons.classList.add('hidden');
                 quickCategoryTags.classList.remove('hidden');
-                document.getElementById('serviceDetailsContainer').innerHTML = '';
-                addServiceItemRow('', '', 1, '');
             } else {
-                btnCar.className = "flex-1 py-2 text-sm font-bold rounded-lg transition-all shadow-sm bg-white text-blue-600 border border-slate-200";
-                btnAc.className = "flex-1 py-2 text-sm font-bold rounded-lg transition-all text-slate-400 hover:text-slate-600 border border-transparent";
-                carTypeButtons.classList.remove('hidden');
+                carFields.classList.remove('hidden');
                 carServiceButtons.classList.remove('hidden');
                 quickCategoryTags.classList.add('hidden');
-                document.getElementById('serviceDetailsContainer').innerHTML = ''; // 切換到汽車模式時先清空明細
             }
-            calcTotalFromDetails();
+            lucide.createIcons();
+        }
+
+        // 本次新增：全域模式切換，控制 Navbar、資料庫、表單 UI
+        window.setGlobalMode = (mode) => {
+            if (globalMode === mode) return;
+            globalMode = mode;
+
+            document.getElementById('navModeAc').className = mode === 'ac' ? "px-3 py-1.5 text-[11px] md:text-xs font-bold rounded-md bg-slate-500 text-white shadow-sm transition-all whitespace-nowrap" : "px-3 py-1.5 text-[11px] md:text-xs font-bold rounded-md text-slate-400 hover:text-white transition-all whitespace-nowrap";
+            document.getElementById('navModeCar').className = mode === 'car' ? "px-3 py-1.5 text-[11px] md:text-xs font-bold rounded-md bg-slate-500 text-white shadow-sm transition-all whitespace-nowrap" : "px-3 py-1.5 text-[11px] md:text-xs font-bold rounded-md text-slate-400 hover:text-white transition-all whitespace-nowrap";
+
+            applyFormModeUI();
+            
+            // 清除篩選，保持畫面乾淨
+            document.getElementById('searchKeyword').value = "";
+            currentTypeFilter = 'all';
+            currentStatusFilter = 'all';
+
+            if (currentUser) {
+                startDataSubscription();
+            }
+            
+            showPage('listPage');
         };
 
-        // 本次新增：點擊車型按鈕，自動帶入輸入框
         window.appendCarType = (typeStr) => {
             const input = document.getElementById('carBrand');
             const currentVal = input.value.trim();
@@ -1309,7 +1330,6 @@
             }
         };
 
-        // 本次新增：點擊美容類別，自動新增一筆明細讓使用者填寫金額
         window.addCarService = (serviceName) => {
             addServiceItemRow(serviceName, '', 1, '');
         };
@@ -1317,21 +1337,27 @@
         window.prepareNewForm = () => {
             editingId = null;
             document.getElementById('recordForm').reset();
-            setWorkType('ac'); // 預設回到冷氣模式
+            document.getElementById('serviceDetailsContainer').innerHTML = '';
+            
+            if (globalMode === 'ac') {
+                addServiceItemRow('', '', 1, '');
+            }
+
             document.getElementById('assistantDetailsContainer').innerHTML = '';
             document.getElementById('passFrom').value = '';
             document.getElementById('formNetProfit').value = '$0';
             updateQuickCategoryTags();
             updateQuickAssistantTags();
             updateQuickPassTags();
+            
+            applyFormModeUI();
             showPage('formPage');
         };
 
         window.addServiceItemRow = (cat = "", title = "", qty = 1, price = "") => {
             const container = document.getElementById('serviceDetailsContainer');
             const div = document.createElement('div');
-            // 本次修改：汽車模式時，隱藏「說明」與「數量」欄位，放大「品項」與「單價」
-            const isCarMode = currentWorkType === 'car';
+            const isCarMode = globalMode === 'car';
             div.className = "grid grid-cols-12 gap-2 items-center service-detail-row mb-2";
             div.innerHTML = `
                 <div class="${isCarMode ? 'col-span-7' : 'col-span-4'}"><input type="text" value="${cat}" list="categoryNamesList" placeholder="品項" class="svc-cat-input w-full rounded-lg p-2 border border-emerald-100 text-sm font-bold ${isCarMode ? 'text-blue-700' : 'text-emerald-700'} focus:outline-none focus:ring-2 focus:ring-emerald-500/20"></div>
@@ -1341,7 +1367,6 @@
                 <div class="col-span-1 text-center"><button type="button" onclick="this.parentElement.parentElement.remove(); calcTotalFromDetails();" class="text-rose-400 font-bold text-lg">&times;</button></div>
             `;
             container.appendChild(div);
-            // 汽車模式如果新增項目，焦點自動跳到價格框方便直接輸入金額
             if(isCarMode) {
                 setTimeout(() => div.querySelector('.svc-price-input').focus(), 50);
             }
@@ -1352,11 +1377,10 @@
             let total = 0;
             document.querySelectorAll('.service-detail-row').forEach(row => {
                 const qtyInput = row.querySelector('.svc-qty-input');
-                const qty = qtyInput ? (parseInt(qtyInput.value) || 1) : 1; // 汽車模式隱藏數量，預設為1
+                const qty = qtyInput ? (parseInt(qtyInput.value) || 1) : 1; 
                 const price = parseInt(row.querySelector('.svc-price-input').value) || 0;
                 total += (qty * price);
             });
-            // 只要有明細，就自動計算並填入總額 (允許為0)
             document.getElementById('totalAmount').value = total;
             calcFormNet();
         };
@@ -1447,7 +1471,7 @@
                 const qtyInput = row.querySelector('.svc-qty-input');
                 const qty = qtyInput ? (parseInt(qtyInput.value) || 1) : 1; 
                 const price = row.querySelector('.svc-price-input').value;
-                if (cat) { // 只要有品項名稱就寫入，不強制數量要大於0 (因為汽車模式隱藏數量)
+                if (cat) {
                     serviceItems.push({ category: cat, title, qty, price: price ? parseInt(price) : null });
 
                     if (cat === '冷氣') {
@@ -1473,13 +1497,14 @@
                 if (n && a) assistantArray.push(`${n}:${a}`);
             });
 
+            // 本次修正：若為冷氣模式，強制將車籍資料清空寫入資料庫，保持資料庫純淨
             const record = {
                 bookingTime: document.getElementById('bookingTime').value,
                 customerName: document.getElementById('customerName').value,
                 phone: document.getElementById('phone').value || "",
                 address: document.getElementById('address').value || "",
-                carBrand: document.getElementById('carBrand').value.trim(),
-                licensePlate: document.getElementById('licensePlate').value.trim(),
+                carBrand: globalMode === 'car' ? document.getElementById('carBrand').value.trim() : "",
+                licensePlate: globalMode === 'car' ? document.getElementById('licensePlate').value.trim() : "",
                 
                 acCount, wmCount, wtCount, acBrand: acDetailsArray.join('+'), 
                 serviceItems, 
@@ -1522,7 +1547,6 @@
             const asNames = new Set();
             const psNames = new Set();
             
-            // 內建汽車美容選單，即使沒打過也會顯示在一般快選區塊裡
             const defaultCarServices = ['精緻洗車', '小美容', '大美容', '車內深層清潔', '玻璃鍍膜'];
             defaultCarServices.forEach(cat => catNames.add(cat));
 
@@ -1982,7 +2006,6 @@
                 const items = normalizeRecord(i);
                 
                 items.forEach(item => {
-                    // 本次修正：若為汽車美容項目，數量通常是 1，不強制顯示單位，讓排版更清爽
                     let isCarService = ['精緻洗車', '小美容', '大美容', '車內深層清潔', '玻璃鍍膜'].includes(item.category);
                     let unit = item.category === '水塔' ? '口' : (item.category === '冷氣' || item.category === '洗衣機' ? '台' : (isCarService ? '' : '單位'));
                     let qtyStr = (isCarService && item.qty === 1) ? '' : `${item.qty}${unit}`;
@@ -2086,10 +2109,6 @@
             const serviceContainer = document.getElementById('serviceDetailsContainer');
             serviceContainer.innerHTML = '';
             const items = normalizeRecord(r);
-            
-            // 本次新增：判斷編輯模式要套用冷氣還是汽車 UI
-            const hasCarService = items.some(item => ['精緻洗車', '小美容', '大美容', '車內深層清潔', '玻璃鍍膜'].includes(item.category) || r.carBrand || r.licensePlate);
-            setWorkType(hasCarService ? 'car' : 'ac');
 
             items.forEach(item => {
                 addServiceItemRow(item.category, item.title, item.qty, item.price || "");
@@ -2102,6 +2121,7 @@
                 r.assistantDetail.split(',').forEach(s => { const [name, amt] = s.split(':'); addAssistantRow(name, amt); });
             }
             
+            applyFormModeUI();
             updateQuickCategoryTags();
             updateQuickAssistantTags();
             updateQuickPassTags();
