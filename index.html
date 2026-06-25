@@ -1036,7 +1036,7 @@
                     </div>
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-2 relative z-10">
                         <div class="bg-white/60 p-2 rounded-xl text-center border border-amber-200/50">
-                            <span class="flex justify-center items-center text-[10px] font-bold text-amber-700/70 mb-0.5">預算上限(<input type="number" id="budgetPercent" value="10" min="0" max="100" oninput="filterRecords()" class="w-5 bg-transparent border-b border-amber-400/50 text-center outline-none font-black text-amber-800 p-0 mx-0.5 leading-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none">%)</span>
+                            <span class="flex justify-center items-center text-[10px] font-bold text-amber-700/70 mb-0.5">預算上限(<input type="number" id="budgetPercent" value="10" min="0" max="100" oninput="budgetPctData[currentAppMode] = this.value; filterRecords()" class="w-5 bg-transparent border-b border-amber-400/50 text-center outline-none font-black text-amber-800 p-0 mx-0.5 leading-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none">%)</span>
                             <span class="block text-sm font-black text-amber-600" id="procBudget">$0</span>
                         </div>
                         <div class="bg-white/60 p-2 rounded-xl text-center border border-amber-200/50">
@@ -1283,6 +1283,7 @@
         
         // 雙模式全域變數 (本次修正：預設切換至 'summary')
         let currentAppMode = 'summary'; // 'ac' = 冷氣清洗, 'car' = 汽車清洗, 'summary' = 總計營收
+        let budgetPctData = { ac: 10, car: 10, summary: 10 }; // 預算上限分別記憶
 
         // 動態資料庫綁定與多重訂閱管理
         let unsubAc = null;
@@ -1429,6 +1430,9 @@
             dataAc = []; dataCar = []; dataProc = [];
             allRecords = [];
             startDataSubscription();
+
+            // 6. 恢復對應模式的預算比例設定
+            document.getElementById('budgetPercent').value = budgetPctData[mode] !== undefined ? budgetPctData[mode] : 10;
 
             // 如果在表單頁且非總計模式，重置表單
             if (!document.getElementById('formPage').classList.contains('hidden') && !isSummary) {
@@ -2352,19 +2356,48 @@
             const list = document.getElementById('recordList');
             list.innerHTML = data.map(i => {
                 let services = [];
-                let asDisplay = "";
                 
                 // 區分冷氣模式與汽車模式的排版邏輯
                 if (i._type === 'ac' || (!i._type && currentAppMode === 'ac')) {
-                    const acTitle = `冷氣${i.acCount}台`;
-                    if(i.acCount > 0) services.push(i.acBrand ? `${acTitle}：${i.acBrand}` : acTitle);
-                    if(i.wmCount > 0) services.push(`洗衣機${i.wmCount}台`);
-                    if(i.wtCount > 0) services.push(`水塔${i.wtCount}口`);
+                    let headerText = [];
+                    if(i.acCount > 0) headerText.push(`冷氣${i.acCount}台`);
+                    if(i.wmCount > 0) headerText.push(`洗衣機${i.wmCount}台`);
+                    if(i.wtCount > 0) headerText.push(`水塔${i.wtCount}口`);
+
+                    if(headerText.length > 0) {
+                        services.push(`<div class="font-bold text-emerald-700 pb-1 mb-1 border-b border-slate-100 flex items-center flex-wrap gap-y-1"><span>${headerText.join('、')}</span></div>`);
+                    }
+
+                    let svcItemsArr = [];
                     
-                    // 冷氣模式：維持原本的小幫手下方文字顯示
-                    if (i.assistantDetail) {
-                        const parts = i.assistantDetail.split(',').map(s => { const [n, a] = s.split(':'); return `${n}${a}元`; });
-                        asDisplay = `小幫手：${parts.join('+')}`;
+                    if (i.acBrand) {
+                        i.acBrand.split('+').forEach(svc => {
+                            const parts = svc.split('*');
+                            const name = parts[0];
+                            const price = parts[1] || '';
+                            svcItemsArr.push(`<div class="flex justify-between items-center text-[0.85rem] border-b border-slate-100 border-dashed py-1.5 last:border-0"><span class="text-slate-600">${name}</span><span class="text-slate-700 font-bold">${price}</span></div>`);
+                        });
+                    } else if (i.acCount > 0) {
+                        svcItemsArr.push(`<div class="flex justify-between items-center text-[0.85rem] border-b border-slate-100 border-dashed py-1.5 last:border-0"><span class="text-slate-600">冷氣清洗</span><span class="text-slate-700 font-bold">${i.acCount}台</span></div>`);
+                    }
+
+                    if (i.wmCount > 0) {
+                        svcItemsArr.push(`<div class="flex justify-between items-center text-[0.85rem] border-b border-slate-100 border-dashed py-1.5 last:border-0"><span class="text-slate-600">洗衣機清洗</span><span class="text-slate-700 font-bold">${i.wmCount}台</span></div>`);
+                    }
+                    if (i.wtCount > 0) {
+                        svcItemsArr.push(`<div class="flex justify-between items-center text-[0.85rem] border-b border-slate-100 border-dashed py-1.5 last:border-0"><span class="text-slate-600">水塔清洗</span><span class="text-slate-700 font-bold">${i.wtCount}口</span></div>`);
+                    }
+
+                    // 冷氣模式：小幫手左右列示，加上負號
+                    if(i.assistantDetail) {
+                        i.assistantDetail.split(',').forEach(s => {
+                            const [n, a] = s.split(':');
+                            svcItemsArr.push(`<div class="flex justify-between items-center text-[0.85rem] border-b border-slate-100 border-dashed py-1.5 last:border-0"><span class="text-rose-500">小幫手：${n}</span><span class="text-rose-600 font-bold">-${a}元</span></div>`);
+                        });
+                    }
+
+                    if(svcItemsArr.length > 0) {
+                        services.push(`<div>${svcItemsArr.join('')}</div>`);
                     }
                 } else {
                     const plateDisplay = i.licensePlate ? `<span class="ml-2 bg-white text-slate-800 font-mono px-2 py-0.5 rounded shadow-sm border border-slate-300 text-[0.65rem] tracking-widest inline-flex items-center gap-1"><span class="w-[3px] h-[3px] rounded-full bg-slate-300"></span>${i.licensePlate}<span class="w-[3px] h-[3px] rounded-full bg-slate-300"></span></span>` : '';
@@ -2415,9 +2448,8 @@
                         ` : ''}
                     </td>
                     <td data-label="服務明細" class="px-6 py-2 text-slate-600">
-                        <div class="leading-tight">${(i._type === 'car' || (!i._type && currentAppMode === 'car')) ? services.join('') : services.join('、')}</div>
+                        <div class="leading-tight">${services.join('')}</div>
                         ${i.note ? `<div class="text-[11px] text-slate-400 note-display mt-0.5">備註: ${i.note}</div>` : ''}
-                        ${asDisplay ? `<div class="text-[11px] text-rose-500 font-medium mt-0.5">${asDisplay}</div>` : ''}
                     </td>
                     <td data-label="金額帳目" class="px-6 py-4 text-slate-600 font-medium">
                         <div class="record-metric-grid">
