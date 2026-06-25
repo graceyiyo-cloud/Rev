@@ -784,7 +784,7 @@
             }
         }
         
-        /* 汽車模式專屬美化 (替換為 Indigo 色系) */
+        /* 汽車模式專屬美化 */
         .car-svc-label {
             cursor: pointer;
             display: flex;
@@ -795,7 +795,7 @@
             color: #334155;
         }
         .car-svc-checkbox {
-            accent-color: #6366f1; /* Indigo 500 */
+            accent-color: #3b82f6;
             width: 1.1rem;
             height: 1.1rem;
             cursor: pointer;
@@ -879,7 +879,7 @@
                     </div>
                     
                     <!-- 汽車模式專屬：基本資料 -->
-                    <div id="carBasicInfoWrap" class="hidden grid grid-cols-1 md:grid-cols-3 gap-4 bg-indigo-50/30 p-4 rounded-xl border border-indigo-100/50">
+                    <div id="carBasicInfoWrap" class="hidden grid grid-cols-1 md:grid-cols-3 gap-4 bg-blue-50/20 p-4 rounded-xl border border-blue-100/50">
                         <div>
                             <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">廠牌</label>
                             <input type="text" id="carBrand" placeholder="例：Toyota" class="block w-full border-slate-200 rounded-xl p-3 border text-sm outline-none">
@@ -922,8 +922,8 @@
 
                     <!-- ================= 汽車專屬區塊 ================= -->
                     <div id="carDetailWrap" class="hidden space-y-4">
-                        <div class="bg-indigo-50/30 p-4 rounded-xl border border-indigo-100">
-                            <label class="block text-xs font-bold text-indigo-600 uppercase tracking-wider mb-2"><i data-lucide="car" class="lucide mr-1"></i> 車種選擇</label>
+                        <div class="bg-blue-50/30 p-4 rounded-xl border border-blue-100">
+                            <label class="block text-xs font-bold text-blue-600 uppercase tracking-wider mb-2"><i data-lucide="car" class="lucide mr-1"></i> 車種選擇</label>
                             <select id="carType" class="w-full border-slate-200 rounded-xl p-3 border text-sm outline-none font-bold text-slate-700 bg-white">
                                 <option value="轎車">轎車</option>
                                 <option value="休旅車">休旅車</option>
@@ -931,29 +931,29 @@
                             </select>
                         </div>
                         
-                        <div class="bg-indigo-50/30 p-4 rounded-xl border border-indigo-100">
-                            <label class="block text-xs font-bold text-indigo-600 uppercase tracking-wider mb-3"><i data-lucide="sparkles" class="lucide mr-1"></i> 美容類別 (可複選)</label>
+                        <div class="bg-blue-50/30 p-4 rounded-xl border border-blue-100">
+                            <label class="block text-xs font-bold text-blue-600 uppercase tracking-wider mb-3"><i data-lucide="sparkles" class="lucide mr-1"></i> 美容類別 (可複選)</label>
                             <div class="space-y-3">
                                 <!-- 動態產生 5 個美容類別 -->
                                 <div class="flex items-center gap-3">
                                     <label class="car-svc-label flex-1"><input type="checkbox" id="carSvc_1" value="精緻洗車" class="car-svc-checkbox" onchange="toggleCarPriceInput(1)"> 精緻洗車</label>
-                                    <input type="number" id="carPrice_1" class="hidden w-28 rounded-lg p-2 border border-indigo-200 text-sm font-bold text-right" placeholder="輸入金額" oninput="calcCarTotal()" onfocus="this.select()">
+                                    <input type="number" id="carPrice_1" class="hidden w-28 rounded-lg p-2 border border-blue-200 text-sm font-bold text-right" placeholder="輸入金額" oninput="calcCarTotal()" onfocus="this.select()">
                                 </div>
                                 <div class="flex items-center gap-3">
                                     <label class="car-svc-label flex-1"><input type="checkbox" id="carSvc_2" value="小美容" class="car-svc-checkbox" onchange="toggleCarPriceInput(2)"> 小美容</label>
-                                    <input type="number" id="carPrice_2" class="hidden w-28 rounded-lg p-2 border border-indigo-200 text-sm font-bold text-right" placeholder="輸入金額" oninput="calcCarTotal()" onfocus="this.select()">
+                                    <input type="number" id="carPrice_2" class="hidden w-28 rounded-lg p-2 border border-blue-200 text-sm font-bold text-right" placeholder="輸入金額" oninput="calcCarTotal()" onfocus="this.select()">
                                 </div>
                                 <div class="flex items-center gap-3">
                                     <label class="car-svc-label flex-1"><input type="checkbox" id="carSvc_3" value="大美容" class="car-svc-checkbox" onchange="toggleCarPriceInput(3)"> 大美容</label>
-                                    <input type="number" id="carPrice_3" class="hidden w-28 rounded-lg p-2 border border-indigo-200 text-sm font-bold text-right" placeholder="輸入金額" oninput="calcCarTotal()" onfocus="this.select()">
+                                    <input type="number" id="carPrice_3" class="hidden w-28 rounded-lg p-2 border border-blue-200 text-sm font-bold text-right" placeholder="輸入金額" oninput="calcCarTotal()" onfocus="this.select()">
                                 </div>
                                 <div class="flex items-center gap-3">
                                     <label class="car-svc-label flex-1"><input type="checkbox" id="carSvc_4" value="車內深層清潔" class="car-svc-checkbox" onchange="toggleCarPriceInput(4)"> 車內深層清潔</label>
-                                    <input type="number" id="carPrice_4" class="hidden w-28 rounded-lg p-2 border border-indigo-200 text-sm font-bold text-right" placeholder="輸入金額" oninput="calcCarTotal()" onfocus="this.select()">
+                                    <input type="number" id="carPrice_4" class="hidden w-28 rounded-lg p-2 border border-blue-200 text-sm font-bold text-right" placeholder="輸入金額" oninput="calcCarTotal()" onfocus="this.select()">
                                 </div>
                                 <div class="flex items-center gap-3">
                                     <label class="car-svc-label flex-1"><input type="checkbox" id="carSvc_5" value="玻璃鍍膜" class="car-svc-checkbox" onchange="toggleCarPriceInput(5)"> 玻璃鍍膜</label>
-                                    <input type="number" id="carPrice_5" class="hidden w-28 rounded-lg p-2 border border-indigo-200 text-sm font-bold text-right" placeholder="輸入金額" oninput="calcCarTotal()" onfocus="this.select()">
+                                    <input type="number" id="carPrice_5" class="hidden w-28 rounded-lg p-2 border border-blue-200 text-sm font-bold text-right" placeholder="輸入金額" oninput="calcCarTotal()" onfocus="this.select()">
                                 </div>
                             </div>
                         </div>
@@ -1049,9 +1049,9 @@
                             <span class="block text-[10px] font-bold text-amber-700/70 mb-0.5">剩餘預算</span>
                             <span class="block text-sm font-black text-emerald-600" id="procRemain">$0</span>
                         </div>
-                        <div class="bg-indigo-50/80 p-2 rounded-xl text-center border border-indigo-200/50 shadow-[inset_0_1px_0_rgba(255,255,255,1)]">
-                            <span class="block text-[10px] font-bold text-indigo-700/70 mb-0.5">實際淨收入</span>
-                            <span class="block text-sm font-black text-indigo-700" id="actualNet">$0</span>
+                        <div class="bg-blue-50/80 p-2 rounded-xl text-center border border-blue-200/50 shadow-[inset_0_1px_0_rgba(255,255,255,1)]">
+                            <span class="block text-[10px] font-bold text-blue-700/70 mb-0.5">實際淨收入</span>
+                            <span class="block text-sm font-black text-blue-700" id="actualNet">$0</span>
                         </div>
                     </div>
                 </div>
@@ -1263,7 +1263,8 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        // 本次修正：導入 setDoc
+        import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, updateDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         // ==========================================
@@ -1285,17 +1286,7 @@
         
         // 雙模式全域變數 (預設切換至 'summary')
         let currentAppMode = 'summary'; // 'ac' = 冷氣清洗, 'car' = 汽車清洗, 'summary' = 總計營收
-        
-        // 本次修正：新增預算上限的記憶體並嘗試從 localStorage 載入
-        let budgetPctData = { ac: 10, car: 10, summary: 10 };
-        try {
-            const savedPct = localStorage.getItem('budgetPctData');
-            if (savedPct) {
-                budgetPctData = JSON.parse(savedPct);
-            }
-        } catch (e) {
-            console.error("Local Storage Error", e);
-        }
+        let budgetPctData = { ac: 10, car: 10, summary: 10 }; // 預算上限分別記憶
 
         // 動態資料庫綁定與多重訂閱管理
         let unsubAc = null;
@@ -1303,6 +1294,7 @@
         let unsubProc = null;
         let unsubProcAc = null;
         let unsubProcCar = null;
+        let unsubSettings = null; // 本次修正：預算設定同步監聽器
         let dataAc = [];
         let dataCar = [];
         let dataProc = [];
@@ -1346,12 +1338,23 @@
             lucide.createIcons();
         });
 
-        // 獨立記憶更新預算上限比例
-        window.updateBudgetPct = (val) => {
+        // 獨立記憶更新預算上限比例，並即時寫入 Firebase (跨裝置同步)
+        window.updateBudgetPct = async (val) => {
             if(currentAppMode !== 'summary') {
-                budgetPctData[currentAppMode] = parseInt(val) || 0;
-                localStorage.setItem('budgetPctData', JSON.stringify(budgetPctData));
-                filterRecords();
+                const numVal = parseInt(val) || 0;
+                budgetPctData[currentAppMode] = numVal;
+                filterRecords(); // 先本地立刻更新畫面
+
+                // 背景同步寫入 Firebase
+                try {
+                    let baseName = 'systemSettings';
+                    if (!allowedEmails.includes((auth.currentUser?.email || '').toLowerCase())) {
+                        baseName += "_" + auth.currentUser.uid;
+                    }
+                    await setDoc(doc(db, baseName, 'budget'), budgetPctData, { merge: true });
+                } catch (err) {
+                    console.error('Budget sync error:', err);
+                }
             }
         };
 
@@ -1372,18 +1375,18 @@
             document.getElementById('mainTitle').innerText = titles[mode];
             document.title = titles[mode];
 
-            // 1-1. 處理汽車模式配色區分 (改為 Indigo 靛藍色系)
+            // 1-1. 處理汽車模式配色區分 (增加無縫安全替換)
             const navEl = document.getElementById('mainNav');
             if (mode === 'car') {
                 document.body.classList.remove('bg-[#faf9f6]');
                 document.body.classList.add('bg-slate-100');
                 navEl.classList.remove('bg-slate-600');
-                navEl.classList.add('bg-indigo-800');
+                navEl.classList.add('bg-sky-800');
             } else {
                 document.body.classList.add('bg-[#faf9f6]');
                 document.body.classList.remove('bg-slate-100');
                 navEl.classList.add('bg-slate-600');
-                navEl.classList.remove('bg-indigo-800');
+                navEl.classList.remove('bg-sky-800');
             }
 
             // 2. 更新表單與特殊區塊顯示
@@ -1484,6 +1487,7 @@
                 if (unsubProc) { unsubProc(); unsubProc = null; }
                 if (window.unsubProcAc) { window.unsubProcAc(); window.unsubProcAc = null; }
                 if (window.unsubProcCar) { window.unsubProcCar(); window.unsubProcCar = null; }
+                if (unsubSettings) { unsubSettings(); unsubSettings = null; } // 清除監聽
             }
             lucide.createIcons();
         });
@@ -1513,6 +1517,7 @@
             if (unsubProc) { unsubProc(); unsubProc = null; }
             if (window.unsubProcAc) { window.unsubProcAc(); window.unsubProcAc = null; }
             if (window.unsubProcCar) { window.unsubProcCar(); window.unsubProcCar = null; }
+            if (unsubSettings) { unsubSettings(); unsubSettings = null; } // 重置監聽
 
             const getCol = (type) => {
                 let baseName = type === 'car' ? 'carRecords' : 'cleaningRecords';
@@ -1531,6 +1536,30 @@
                     return collection(db, baseName + "_" + auth.currentUser.uid);
                 }
             };
+
+            // 【本次新增】監聽預算設定的 Firebase 即時更新 (跨裝置同步)
+            const getSettingsDocRef = () => {
+                let baseName = 'systemSettings';
+                if (!allowedEmails.includes((auth.currentUser?.email || '').toLowerCase())) {
+                    baseName += "_" + auth.currentUser.uid;
+                }
+                return doc(db, baseName, 'budget');
+            };
+            unsubSettings = onSnapshot(getSettingsDocRef(), (docSnap) => {
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    budgetPctData.ac = data.ac !== undefined ? data.ac : 10;
+                    budgetPctData.car = data.car !== undefined ? data.car : 10;
+                    
+                    const pctInput = document.getElementById('budgetPercent');
+                    if (pctInput && currentAppMode !== 'summary') {
+                        if (parseInt(pctInput.value) !== budgetPctData[currentAppMode]) {
+                            pctInput.value = budgetPctData[currentAppMode];
+                        }
+                    }
+                    filterRecords();
+                }
+            });
 
             // 冷氣模式 或 總計模式
             if (currentAppMode === 'ac' || currentAppMode === 'summary') {
@@ -2053,9 +2082,9 @@
         }
 
         function resetFilterButtonStyles(groupSelector, activeValue) {
-            const colorMap = { all: 'bg-slate-200', completed: 'bg-emerald-100', pending: 'bg-amber-100', ac: 'bg-emerald-100', wm: 'bg-blue-100', wt: 'bg-purple-100', '轎車': 'bg-indigo-100', '休旅車': 'bg-violet-100', '7人座': 'bg-fuchsia-100' };
+            const colorMap = { all: 'bg-slate-200', completed: 'bg-emerald-100', pending: 'bg-amber-100', ac: 'bg-emerald-100', wm: 'bg-blue-100', wt: 'bg-purple-100', '轎車': 'bg-emerald-100', '休旅車': 'bg-blue-100', '7人座': 'bg-purple-100' };
             document.querySelectorAll(groupSelector).forEach(btn => {
-                btn.classList.remove('bg-white', 'bg-slate-200', 'bg-emerald-100', 'bg-amber-100', 'bg-blue-100', 'bg-purple-100', 'bg-indigo-100', 'bg-violet-100', 'bg-fuchsia-100', 'shadow-sm', 'text-slate-700');
+                btn.classList.remove('bg-white', 'bg-slate-200', 'bg-emerald-100', 'bg-amber-100', 'bg-blue-100', 'bg-purple-100', 'shadow-sm', 'text-slate-700');
                 btn.classList.add('text-slate-400');
                 const onclickText = btn.getAttribute('onclick') || '';
                 if (onclickText.includes(`'${activeValue}'`)) {
@@ -2098,9 +2127,9 @@
 
         window.setTypeFilter = (val, btn) => {
             currentTypeFilter = val;
-            const typeColors = { all: 'bg-slate-200', ac: 'bg-emerald-100', wm: 'bg-blue-100', wt: 'bg-purple-100', '轎車': 'bg-indigo-100', '休旅車': 'bg-violet-100', '7人座': 'bg-fuchsia-100' };
+            const typeColors = { all: 'bg-slate-200', ac: 'bg-emerald-100', wm: 'bg-blue-100', wt: 'bg-purple-100', '轎車': 'bg-emerald-100', '休旅車': 'bg-blue-100', '7人座': 'bg-purple-100' };
             document.querySelectorAll('.type-btn').forEach(b => {
-                b.classList.remove('bg-white', 'bg-slate-200', 'bg-emerald-100', 'bg-blue-100', 'bg-purple-100', 'bg-indigo-100', 'bg-violet-100', 'bg-fuchsia-100', 'shadow-sm', 'text-slate-700');
+                b.classList.remove('bg-white', 'bg-slate-200', 'bg-emerald-100', 'bg-blue-100', 'bg-purple-100', 'shadow-sm', 'text-slate-700');
                 b.classList.add('text-slate-400');
             });
             btn.classList.add(typeColors[val], 'shadow-sm', 'text-slate-700');
@@ -2426,10 +2455,8 @@
                                 // 防呆相容舊有資料
                                 const parts = svc.split('*');
                                 const name = parts[0];
-                                const rawPrice = parts[1] ? parts[1].replace('元', '') : '0';
-                                const priceAmt = parseInt(rawPrice) || 0;
-                                const priceDisplay = priceAmt > 0 ? `$${priceAmt.toLocaleString()}` : '';
-                                svcItemsArr.push(`<div class="flex justify-between items-center text-[0.85rem] border-b border-slate-100 border-dashed py-1.5 last:border-0"><span class="text-slate-600">${name}</span><span class="text-slate-700 font-bold">${priceDisplay}</span></div>`);
+                                const price = parts[1] || '';
+                                svcItemsArr.push(`<div class="flex justify-between items-center text-[0.85rem] border-b border-slate-100 border-dashed py-1.5 last:border-0"><span class="text-slate-600">${name}</span><span class="text-slate-700 font-bold">${price}</span></div>`);
                             }
                         });
                     } else if (i.acCount > 0) {
@@ -2459,17 +2486,15 @@
                     const plateDisplay = i.licensePlate ? `<span class="ml-2 bg-white text-slate-800 font-mono px-2 py-0.5 rounded shadow-sm border border-slate-300 text-[0.65rem] tracking-widest inline-flex items-center gap-1"><span class="w-[3px] h-[3px] rounded-full bg-slate-300"></span>${i.licensePlate}<span class="w-[3px] h-[3px] rounded-full bg-slate-300"></span></span>` : '';
                     const brandDisplay = i.carBrand ? `${i.carBrand} ` : '';
                     const modelDisplay = i.carModel ? `${i.carModel} ` : '';
-                    services.push(`<div class="font-bold text-indigo-700 pb-1 mb-1 border-b border-slate-100 flex items-center flex-wrap gap-y-1"><span>${brandDisplay}${modelDisplay}${i.carType}</span>${plateDisplay}</div>`);
+                    services.push(`<div class="font-bold text-blue-700 pb-1 mb-1 border-b border-slate-100 flex items-center flex-wrap gap-y-1"><span>${brandDisplay}${modelDisplay}${i.carType}</span>${plateDisplay}</div>`);
                     
                     let svcItemsArr = [];
                     if(i.carServices) {
                         i.carServices.split('+').forEach(svc => {
                             const parts = svc.split('*');
                             const name = parts[0];
-                            const rawPrice = parts[1] ? parts[1].replace('元', '') : '0';
-                            const priceAmt = parseInt(rawPrice) || 0;
-                            const priceDisplay = priceAmt > 0 ? `$${priceAmt.toLocaleString()}` : '';
-                            svcItemsArr.push(`<div class="flex justify-between items-center text-[0.85rem] border-b border-slate-100 border-dashed py-1.5 last:border-0"><span class="text-slate-600">${name}</span><span class="text-slate-700 font-bold">${priceDisplay}</span></div>`);
+                            const price = parts[1] || '';
+                            svcItemsArr.push(`<div class="flex justify-between items-center text-[0.85rem] border-b border-slate-100 border-dashed py-1.5 last:border-0"><span class="text-slate-600">${name}</span><span class="text-slate-700 font-bold">${price}</span></div>`);
                         });
                     }
                     // 本次修改：汽車模式將小幫手匯入如服務項目的左右排版，並加上負號與千分位
@@ -2491,7 +2516,7 @@
                 return `
                 <tr id="rec-${i.id}" class="${isComp ? 'completed-row' : ''}">
                     <td data-label="預約時間" class="px-6 py-4 time-display flex justify-between items-center">
-                        <span>${i.bookingTime.replace('T',' ')} ${i._type === 'car' ? '<span class="text-indigo-500 text-[10px] ml-1">[汽車]</span>' : (i._type === 'ac' ? '<span class="text-emerald-500 text-[10px] ml-1">[冷氣]</span>' : '')}</span>
+                        <span>${i.bookingTime.replace('T',' ')} ${i._type === 'car' ? '<span class="text-blue-500 text-[10px] ml-1">[汽車]</span>' : (i._type === 'ac' ? '<span class="text-emerald-500 text-[10px] ml-1">[冷氣]</span>' : '')}</span>
                         ${i.passFrom ? `<span class="text-indigo-500 font-bold flex items-center gap-1"><i data-lucide="forward" class="w-3 h-3"></i>PASS: ${i.passFrom}</span>` : '<span></span>'}
                     </td>
                     <td data-label="客戶" class="px-6 py-4 flex items-center gap-2">
