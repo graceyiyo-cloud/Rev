@@ -24,6 +24,7 @@
         body { 
             font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans TC", sans-serif; 
             background-color: #ffffff !important;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
         /* 本次修正：加上 !important 確保能蓋過 ID 選擇器的 display 屬性 */
         .hidden { display: none !important; }
@@ -800,6 +801,112 @@
             height: 1.1rem;
             cursor: pointer;
         }
+
+        /* =========================================
+           汽車模式專屬深色主題 (Zero Side-Effects)
+           不干擾既有 HTML 架構與其他模式的 class 
+           ========================================= */
+        body.car-dark-mode {
+            background-color: #0f172a !important; /* slate-900 */
+            color: #e2e8f0 !important; /* slate-200 */
+        }
+        .car-dark-mode nav { background-color: #020617 !important; border-bottom: 1px solid #1e293b; }
+        
+        .car-dark-mode .bg-white,
+        .car-dark-mode .bg-\\[\\#faf9f6\\] { background-color: #1e293b !important; }
+        .car-dark-mode .bg-slate-50, 
+        .car-dark-mode .bg-slate-100 { background-color: #0f172a !important; }
+        
+        .car-dark-mode .bg-blue-50\/20, .car-dark-mode .bg-blue-50\/30, 
+        .car-dark-mode .bg-rose-50\/30, .car-dark-mode .bg-indigo-50\/30,
+        .car-dark-mode .bg-emerald-50\/30 { background-color: rgba(30, 41, 59, 0.6) !important; }
+
+        .car-dark-mode .text-slate-900, .car-dark-mode .text-slate-800, 
+        .car-dark-mode .text-slate-700 { color: #f8fafc !important; }
+        .car-dark-mode .text-slate-600 { color: #cbd5e1 !important; }
+        .car-dark-mode .text-slate-500, .car-dark-mode .text-slate-400 { color: #94a3b8 !important; }
+        .car-dark-mode .text-blue-600, .car-dark-mode .text-blue-700 { color: #60a5fa !important; }
+        .car-dark-mode .text-rose-600 { color: #fb7185 !important; }
+        .car-dark-mode .text-emerald-600 { color: #34d399 !important; }
+        .car-dark-mode .text-indigo-600 { color: #818cf8 !important; }
+
+        .car-dark-mode .border-slate-100, .car-dark-mode .border-slate-200, 
+        .car-dark-mode .border-blue-100, .car-dark-mode .border-rose-100, 
+        .car-dark-mode .border-emerald-100, .car-dark-mode .border-indigo-100,
+        .car-dark-mode .border-dashed { border-color: #334155 !important; }
+        .car-dark-mode .border-blue-100\/50, .car-dark-mode .border-rose-100\/50, 
+        .car-dark-mode .border-indigo-100\/50 { border-color: rgba(51, 65, 85, 0.5) !important; }
+
+        .car-dark-mode input:not([type="checkbox"]):not([type="radio"]), 
+        .car-dark-mode select, .car-dark-mode textarea {
+            background-color: #0f172a !important;
+            color: #f8fafc !important;
+            border-color: #334155 !important;
+        }
+
+        .car-dark-mode .stats-card-year, .car-dark-mode .stats-card-month {
+            background: #1e293b !important;
+            border-color: #334155 !important;
+            border-top-color: #475569 !important;
+        }
+        .car-dark-mode .stats-card-all { background: #0f172a !important; border-color: #334155 !important; border-top-color: #475569 !important; }
+        
+        .car-dark-mode .metric-box-rev { background-color: rgba(255,255,255,0.05) !important; border-color: rgba(255,255,255,0.1) !important; color: #f8fafc !important; }
+        .car-dark-mode .metric-box-exp { background-color: rgba(225, 29, 72, 0.1) !important; border-color: rgba(225, 29, 72, 0.2) !important; color: #f43f5e !important; }
+        .car-dark-mode .metric-box-net { background-color: rgba(16, 185, 129, 0.1) !important; border-color: rgba(16, 185, 129, 0.2) !important; color: #10b981 !important; }
+
+        .car-dark-mode tr { background-color: #1e293b !important; border-color: #334155 !important; }
+        .car-dark-mode td[data-label="金額帳目"], .car-dark-mode .time-display, .car-dark-mode .action-cell { border-color: #334155 !important; }
+        .car-dark-mode td[data-label="客戶"] span.bg-white { background-color: #0f172a !important; color: #94a3b8 !important; border-color: #334155 !important; }
+        .car-dark-mode .completed-row { background-color: #020617 !important; border-top-color: #475569 !important; }
+
+        .car-dark-mode .record-metric-grid .metric-box-rev .metric-box-value { color: #cbd5e1 !important; }
+
+        .car-dark-mode .filter-shell { background-color: #1e293b !important; border-color: #334155 !important; }
+        .car-dark-mode .filter-toggle-btn { background-color: #0f172a !important; color: #cbd5e1 !important; }
+        .car-dark-mode .filter-toggle-title { color: #f8fafc !important; }
+        .car-dark-mode #typeFilterGroup, .car-dark-mode #statusFilterGroup { background-color: #0f172a !important; }
+        .car-dark-mode .type-btn.bg-slate-200, .car-dark-mode .status-btn.bg-slate-200 { background-color: #334155 !important; color: #f8fafc !important; }
+        .car-dark-mode .clear-filter-row button { background-color: #334155 !important; color: #cbd5e1 !important; }
+
+        .car-dark-mode #procurementSection { background-color: #1e293b !important; border-color: #b45309 !important; }
+        .car-dark-mode #procurementSection .bg-white\\/60 { background-color: #0f172a !important; border-color: #334155 !important; color: #cbd5e1 !important;}
+        .car-dark-mode #procurementSection .bg-blue-50\\/80 { background-color: rgba(30, 41, 59, 0.8) !important; border-color: #334155 !important; }
+        .car-dark-mode #procurementSection h3, .car-dark-mode #procurementSection span { color: #cbd5e1 !important; }
+        .car-dark-mode #procBudget { color: #fbbf24 !important; }
+        .car-dark-mode #procSpent { color: #fb7185 !important; }
+        .car-dark-mode #procRemain, .car-dark-mode #actualNet { color: #34d399 !important; }
+
+        .car-dark-mode #passSummarySection, .car-dark-mode #passYearSummarySection { background-color: #0f172a !important; border-top-color: #334155 !important; }
+        .car-dark-mode .pass-card { background-color: #1e293b !important; border-color: #334155 !important; }
+        .car-dark-mode .pass-card-top { border-bottom-color: rgba(51, 65, 85, 0.5) !important; }
+        .car-dark-mode .pass-year-theme .pass-avatar, .car-dark-mode .pass-year-theme .pass-qty, .car-dark-mode .pass-year-theme .pass-metric, .car-dark-mode .pass-year-theme .pass-total-pill,
+        .car-dark-mode .pass-month-theme .pass-avatar, .car-dark-mode .pass-month-theme .pass-qty, .car-dark-mode .pass-month-theme .pass-metric, .car-dark-mode .pass-month-theme .pass-total-pill { background-color: #334155 !important; color: #cbd5e1 !important; }
+        .car-dark-mode .pass-month-theme .pass-name, .car-dark-mode .pass-year-theme .pass-name { color: #f8fafc !important; }
+
+        .car-dark-mode #assistantSummaryModal, .car-dark-mode #procurementModal { background-color: #1e293b !important; border-color: #334155 !important; color: #cbd5e1 !important; }
+        .car-dark-mode .border-b { border-color: #334155 !important; }
+        
+        .car-dark-mode #floatingUnpaidList { background-color: #1e293b !important; border-color: #b45309 !important; color: #cbd5e1 !important; }
+        .car-dark-mode .floating-unpaid-item { border-bottom-color: #334155 !important; }
+        .car-dark-mode .floating-reminder-empty { color: #94a3b8 !important; }
+
+        .car-dark-mode #totalAmount, .car-dark-mode #assistantPay, .car-dark-mode #formNetProfit { background-color: #0f172a !important; }
+        
+        .car-dark-mode .action-cell button.bg-slate-50 { background-color: #0f172a !important; border-color: #334155 !important; color: #94a3b8 !important; }
+        .car-dark-mode .action-cell button.bg-emerald-50 { background-color: rgba(16, 185, 129, 0.1) !important; border-color: rgba(16, 185, 129, 0.2) !important; color: #34d399 !important; }
+        .car-dark-mode .action-cell button.bg-amber-50 { background-color: rgba(245, 158, 11, 0.1) !important; border-color: rgba(245, 158, 11, 0.2) !important; color: #fbbf24 !important; }
+        .car-dark-mode .action-cell button.bg-indigo-50 { background-color: rgba(99, 102, 241, 0.1) !important; border-color: rgba(99, 102, 241, 0.2) !important; color: #818cf8 !important; }
+        .car-dark-mode .action-cell button.bg-slate-100 { background-color: #334155 !important; border-color: #475569 !important; color: #cbd5e1 !important; }
+        .car-dark-mode .action-cell button.bg-rose-50 { background-color: rgba(225, 29, 72, 0.1) !important; border-color: rgba(225, 29, 72, 0.2) !important; color: #fb7185 !important; }
+        
+        .car-dark-mode button[onclick^="copyText"] { background-color: #334155 !important; color: #cbd5e1 !important; }
+        .car-dark-mode button[onclick*="showPage('listPage')"] { background: #334155 !important; color: #f8fafc !important; border-color: #475569 !important; }
+        
+        .car-dark-mode #authPage { background-color: #0f172a !important; }
+        .car-dark-mode #authPage > div { background-color: #1e293b !important; border-color: #334155 !important; }
+        .car-dark-mode #authPage h2 { color: #f8fafc !important; }
+        .car-dark-mode #authPage button { background-color: #0f172a !important; border-color: #334155 !important; color: #f8fafc !important; }
     </style>
 </head>
 <body class="bg-[#faf9f6] min-h-screen text-slate-700">
@@ -1279,8 +1386,8 @@
         const auth = getAuth(app);
         const provider = new GoogleAuthProvider();
         
-        // 雙模式全域變數 (新增 'summary')
-        let currentAppMode = 'ac'; // 'ac' = 冷氣清洗, 'car' = 汽車清洗, 'summary' = 總計營收
+        // 本次修改：讓初始變數為預設 ac，以便後續 DOMContentLoaded 觸發 summary 切換
+        let currentAppMode = 'ac'; 
 
         // 動態資料庫綁定與多重訂閱管理
         let unsubAc = null;
@@ -1329,12 +1436,21 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             lucide.createIcons();
+            // 本次修改：預設進入總計頁面
+            switchAppMode('summary'); 
         });
 
         // 模式切換邏輯 (含 Summary 支援)
         window.switchAppMode = (mode) => {
             if (currentAppMode === mode) return;
             currentAppMode = mode;
+
+            // 本次修改：汽車模式開啟時，加入深色模式 class，並透過 CSS 接管
+            if (mode === 'car') {
+                document.body.classList.add('car-dark-mode');
+            } else {
+                document.body.classList.remove('car-dark-mode');
+            }
 
             const btnClasses = 'px-3 py-1 rounded bg-slate-500 text-white shadow-sm transition-all';
             const btnClassesOff = 'px-3 py-1 rounded text-slate-300 hover:text-white transition-all';
@@ -1458,6 +1574,9 @@
 
         // 並行訂閱控制中心
         function startDataSubscription() {
+            // 本次修改：防呆，避免在 auth 完成前觸發 collection 存取而報錯
+            if (!auth.currentUser) return; 
+
             if (unsubAc) { unsubAc(); unsubAc = null; }
             if (unsubCar) { unsubCar(); unsubCar = null; }
             if (unsubProc) { unsubProc(); unsubProc = null; }
@@ -2347,6 +2466,7 @@
                         asDisplay = `小幫手：${parts.join('+')}`;
                     }
                 } else {
+                    // 本次修改：美化車牌號碼樣式
                     const plateDisplay = i.licensePlate ? `<span class="ml-2 bg-white text-slate-800 font-mono px-2 py-0.5 rounded shadow-sm border border-slate-300 text-[0.65rem] tracking-widest inline-flex items-center gap-1"><span class="w-[3px] h-[3px] rounded-full bg-slate-300"></span>${i.licensePlate}<span class="w-[3px] h-[3px] rounded-full bg-slate-300"></span></span>` : '';
                     const brandDisplay = i.carBrand ? `${i.carBrand} ` : '';
                     const modelDisplay = i.carModel ? `${i.carModel} ` : '';
@@ -2533,6 +2653,7 @@
         window.quickFilterUnpaid = () => { /* 此功能現改為由懸浮驚嘆號控制 */ };
         window.deleteRec = async (id) => { if(confirm('確定要刪除嗎？')) await deleteDoc(getRecordDoc(id)); };
 
+        // 本次修改：強化對截圖深色模式外框與顏色的適配
         window.downloadRec = (id) => {
             const el = document.getElementById(`rec-${id}`);
             const actionCell = el.querySelector('.action-cell');
@@ -2548,7 +2669,15 @@
             const originalWidth = el.style.width;
             el.style.width = getComputedStyle(el).width;
             
-            el.style.setProperty('background-color', '#ffffff', 'important');
+            // 判斷是否為深色模式，以賦予正確背景與邊框顏色
+            const isDark = document.body.classList.contains('car-dark-mode');
+            const bgColor = isDark ? '#1e293b' : '#ffffff';
+            const frameColor = isDark ? '#0f172a' : '#f8fafc';
+            const borderColor = isDark ? '#334155' : '#cbd5e1';
+            const outerBorderColor = isDark ? '#475569' : '#e2e8f0';
+            const gridBorderGradient = isDark ? '#334155' : '#e2e8f0';
+            
+            el.style.setProperty('background-color', bgColor, 'important');
             el.style.setProperty('border-top', 'none', 'important'); 
             
             contentTds.forEach(td => {
@@ -2566,7 +2695,7 @@
             
             metricBoxesWithLines.forEach(box => {
                 box.style.setProperty('border-right', 'none', 'important');
-                box.style.setProperty('background-image', 'linear-gradient(to bottom, transparent 15px, #e2e8f0 15px)', 'important');
+                box.style.setProperty('background-image', `linear-gradient(to bottom, transparent 15px, ${gridBorderGradient} 15px)`, 'important');
                 box.style.setProperty('background-size', '1px 100%', 'important');
                 box.style.setProperty('background-repeat', 'no-repeat', 'important');
                 box.style.setProperty('background-position', 'right', 'important');
@@ -2574,7 +2703,7 @@
 
             html2canvas(el, {
                 scale: 2, 
-                backgroundColor: "#ffffff", 
+                backgroundColor: bgColor, 
                 useCORS: true,
                 logging: false
             }).then(canvas => {
@@ -2626,7 +2755,7 @@
                 ctx.clearRect(0, 0, framedCanvas.width, framedCanvas.height);
                 ctx.save();
                 drawRoundedRect(ctx, 6, 6, framedCanvas.width - 12, framedCanvas.height - 12, radius + 8);
-                ctx.fillStyle = '#f8fafc';
+                ctx.fillStyle = frameColor;
                 ctx.fill();
                 ctx.restore();
 
@@ -2635,7 +2764,7 @@
                 ctx.shadowBlur = 18;
                 ctx.shadowOffsetY = 6;
                 drawRoundedRect(ctx, padding, padding, canvas.width, canvas.height, radius);
-                ctx.fillStyle = '#ffffff';
+                ctx.fillStyle = bgColor;
                 ctx.fill();
                 ctx.restore();
 
@@ -2648,14 +2777,14 @@
 
                 ctx.save();
                 drawRoundedRect(ctx, padding + 1.5, padding + 1.5, canvas.width - 3, canvas.height - 3, radius - 1);
-                ctx.strokeStyle = '#cbd5e1';
+                ctx.strokeStyle = borderColor;
                 ctx.lineWidth = 3;
                 ctx.stroke();
                 ctx.restore();
 
                 ctx.save();
                 drawRoundedRect(ctx, padding - 8, padding - 8, canvas.width + 16, canvas.height + 16, radius + 6);
-                ctx.strokeStyle = '#e2e8f0';
+                ctx.strokeStyle = outerBorderColor;
                 ctx.lineWidth = 2;
                 ctx.stroke();
                 ctx.restore();
@@ -2681,3 +2810,4 @@
     </script>
 </body>
 </html>
+```eof
