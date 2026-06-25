@@ -1036,7 +1036,9 @@
                     </div>
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-2 relative z-10">
                         <div class="bg-white/60 p-2 rounded-xl text-center border border-amber-200/50">
-                            <span class="flex justify-center items-center text-[10px] font-bold text-amber-700/70 mb-0.5">預算上限(<input type="number" id="budgetPercent" value="10" min="0" max="100" oninput="budgetPctData[currentAppMode] = this.value; filterRecords()" class="w-5 bg-transparent border-b border-amber-400/50 text-center outline-none font-black text-amber-800 p-0 mx-0.5 leading-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none">%)</span>
+                            <span id="budgetPctWrap" class="flex justify-center items-center text-[10px] font-bold text-amber-700/70 mb-0.5">
+                                預算上限(<input type="number" id="budgetPercent" value="10" min="0" max="100" oninput="updateBudgetPct(this.value)" class="w-5 bg-transparent border-b border-amber-400/50 text-center outline-none font-black text-amber-800 p-0 mx-0.5 leading-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none">%)
+                            </span>
                             <span class="block text-sm font-black text-amber-600" id="procBudget">$0</span>
                         </div>
                         <div class="bg-white/60 p-2 rounded-xl text-center border border-amber-200/50">
@@ -1281,7 +1283,7 @@
         const auth = getAuth(app);
         const provider = new GoogleAuthProvider();
         
-        // 雙模式全域變數 (本次修正：預設切換至 'summary')
+        // 雙模式全域變數 (預設切換至 'summary')
         let currentAppMode = 'summary'; // 'ac' = 冷氣清洗, 'car' = 汽車清洗, 'summary' = 總計營收
         let budgetPctData = { ac: 10, car: 10, summary: 10 }; // 預算上限分別記憶
 
@@ -1333,6 +1335,14 @@
         document.addEventListener('DOMContentLoaded', () => {
             lucide.createIcons();
         });
+
+        // 獨立記憶更新預算上限比例
+        window.updateBudgetPct = (val) => {
+            if(currentAppMode !== 'summary') {
+                budgetPctData[currentAppMode] = parseInt(val) || 0;
+                filterRecords();
+            }
+        };
 
         // 模式切換邏輯 (含 Summary 支援)
         window.switchAppMode = (mode) => {
@@ -1431,8 +1441,13 @@
             allRecords = [];
             startDataSubscription();
 
-            // 6. 恢復對應模式的預算比例設定
-            document.getElementById('budgetPercent').value = budgetPctData[mode] !== undefined ? budgetPctData[mode] : 10;
+            // 6. 恢復對應模式的預算比例設定 (總計模式不顯示輸入框)
+            const pctWrap = document.getElementById('budgetPctWrap');
+            if (isSummary) {
+                pctWrap.innerHTML = '預算上限(合併)';
+            } else {
+                pctWrap.innerHTML = `預算上限(<input type="number" id="budgetPercent" value="${budgetPctData[mode] !== undefined ? budgetPctData[mode] : 10}" min="0" max="100" oninput="updateBudgetPct(this.value)" class="w-5 bg-transparent border-b border-amber-400/50 text-center outline-none font-black text-amber-800 p-0 mx-0.5 leading-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none">%)`;
+            }
 
             // 如果在表單頁且非總計模式，重置表單
             if (!document.getElementById('formPage').classList.contains('hidden') && !isSummary) {
@@ -2092,6 +2107,7 @@
 
             // aAc 代表冷氣/轎車，aWm 代表洗衣機/休旅車，aWt 代表水塔/7人座 (共用計數變數以保持代碼簡潔)
             let aAc = 0, aWm = 0, aWt = 0, aRev = 0, aExp = 0;
+            let aRevAc = 0, aRevCar = 0; // 本次新增：為分開計算預算使用
             let yRev = 0, yExp = 0, yAc = 0, yWm = 0, yWt = 0;
             let fRev = 0, fExp = 0, fAc = 0, fWm = 0, fWt = 0;
             let systemUnpaidDetails = [];
@@ -2186,10 +2202,12 @@
                     ac = parseInt(r.acCount) || 0;
                     wm = parseInt(r.wmCount) || 0;
                     wt = parseInt(r.wtCount) || 0;
+                    aRevAc += rev;
                 } else {
                     if (r.carType === '轎車') ac = 1;
                     if (r.carType === '休旅車') wm = 1;
                     if (r.carType === '7人座') wt = 1;
+                    aRevCar += rev;
                 }
 
                 if (r.payment === 'unpaid') {
@@ -2228,16 +2246,21 @@
                 addPassSummary(fPassSummary, r);
             });
 
-            // ===== 採購預算計算與呈現 (三模式共用) ======
+            // ===== 採購預算計算與呈現 (三模式共用，預算各自獨立計算) ======
             let procTotal = 0;
             dataProc.forEach(p => {
                 procTotal += (parseInt(p.amount) || 0);
             });
             
-            const pctStr = document.getElementById('budgetPercent').value;
-            const pct = isNaN(parseInt(pctStr)) ? 0 : parseInt(pctStr);
+            let budget = 0;
+            if (currentAppMode === 'summary') {
+                budget = Math.floor(aRevAc * ((budgetPctData.ac || 10) / 100)) + Math.floor(aRevCar * ((budgetPctData.car || 10) / 100));
+            } else if (currentAppMode === 'ac') {
+                budget = Math.floor(aRev * ((budgetPctData.ac || 10) / 100));
+            } else if (currentAppMode === 'car') {
+                budget = Math.floor(aRev * ((budgetPctData.car || 10) / 100));
+            }
             
-            const budget = Math.floor(aRev * (pct / 100));
             const remain = budget - procTotal;
             const actualNet = (aRev - aExp) - procTotal;
 
@@ -2372,10 +2395,29 @@
                     
                     if (i.acBrand) {
                         i.acBrand.split('+').forEach(svc => {
-                            const parts = svc.split('*');
-                            const name = parts[0];
-                            const price = parts[1] || '';
-                            svcItemsArr.push(`<div class="flex justify-between items-center text-[0.85rem] border-b border-slate-100 border-dashed py-1.5 last:border-0"><span class="text-slate-600">${name}</span><span class="text-slate-700 font-bold">${price}</span></div>`);
+                            const match = svc.match(/(.*?)-(\d+)台(?:\*(\d+)元)?/);
+                            if (match) {
+                                const brand = match[1] || '機型未填';
+                                const qty = parseInt(match[2]) || 0;
+                                const price = parseInt(match[3]) || 0;
+                                const amount = qty * price;
+                                
+                                let detailsText = `<span class="text-slate-600">${brand}</span>`;
+                                let amountText = `<span class="text-slate-700 font-bold">${qty}台</span>`;
+                                
+                                if (price > 0) {
+                                    detailsText = `<span class="text-slate-600">${brand} <span class="text-slate-400 text-[0.75rem] ml-1">($${price.toLocaleString()} × ${qty})</span></span>`;
+                                    amountText = `<span class="text-slate-700 font-bold">$${amount.toLocaleString()}</span>`;
+                                }
+
+                                svcItemsArr.push(`<div class="flex justify-between items-center text-[0.85rem] border-b border-slate-100 border-dashed py-1.5 last:border-0">${detailsText}${amountText}</div>`);
+                            } else {
+                                // 防呆相容舊有資料
+                                const parts = svc.split('*');
+                                const name = parts[0];
+                                const price = parts[1] || '';
+                                svcItemsArr.push(`<div class="flex justify-between items-center text-[0.85rem] border-b border-slate-100 border-dashed py-1.5 last:border-0"><span class="text-slate-600">${name}</span><span class="text-slate-700 font-bold">${price}</span></div>`);
+                            }
                         });
                     } else if (i.acCount > 0) {
                         svcItemsArr.push(`<div class="flex justify-between items-center text-[0.85rem] border-b border-slate-100 border-dashed py-1.5 last:border-0"><span class="text-slate-600">冷氣清洗</span><span class="text-slate-700 font-bold">${i.acCount}台</span></div>`);
@@ -2388,11 +2430,12 @@
                         svcItemsArr.push(`<div class="flex justify-between items-center text-[0.85rem] border-b border-slate-100 border-dashed py-1.5 last:border-0"><span class="text-slate-600">水塔清洗</span><span class="text-slate-700 font-bold">${i.wtCount}口</span></div>`);
                     }
 
-                    // 冷氣模式：小幫手左右列示，加上負號
+                    // 冷氣模式：小幫手左右列示，加上負號與千分位
                     if(i.assistantDetail) {
                         i.assistantDetail.split(',').forEach(s => {
                             const [n, a] = s.split(':');
-                            svcItemsArr.push(`<div class="flex justify-between items-center text-[0.85rem] border-b border-slate-100 border-dashed py-1.5 last:border-0"><span class="text-rose-500">小幫手：${n}</span><span class="text-rose-600 font-bold">-${a}元</span></div>`);
+                            const amt = parseInt(a) || 0;
+                            svcItemsArr.push(`<div class="flex justify-between items-center text-[0.85rem] border-b border-slate-100 border-dashed py-1.5 last:border-0"><span class="text-rose-500">小幫手：${n}</span><span class="text-rose-600 font-bold">-$${amt.toLocaleString()}</span></div>`);
                         });
                     }
 
@@ -2414,11 +2457,12 @@
                             svcItemsArr.push(`<div class="flex justify-between items-center text-[0.85rem] border-b border-slate-100 border-dashed py-1.5 last:border-0"><span class="text-slate-600">${name}</span><span class="text-slate-700 font-bold">${price}</span></div>`);
                         });
                     }
-                    // 本次修改：汽車模式將小幫手匯入如服務項目的左右排版
+                    // 本次修改：汽車模式將小幫手匯入如服務項目的左右排版，並加上負號與千分位
                     if(i.assistantDetail) {
                         i.assistantDetail.split(',').forEach(s => {
                             const [n, a] = s.split(':');
-                            svcItemsArr.push(`<div class="flex justify-between items-center text-[0.85rem] border-b border-slate-100 border-dashed py-1.5 last:border-0"><span class="text-rose-500">小幫手：${n}</span><span class="text-rose-600 font-bold">-${a}元</span></div>`);
+                            const amt = parseInt(a) || 0;
+                            svcItemsArr.push(`<div class="flex justify-between items-center text-[0.85rem] border-b border-slate-100 border-dashed py-1.5 last:border-0"><span class="text-rose-500">小幫手：${n}</span><span class="text-rose-600 font-bold">-$${amt.toLocaleString()}</span></div>`);
                         });
                     }
                     if(svcItemsArr.length > 0) {
