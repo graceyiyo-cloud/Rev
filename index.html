@@ -1023,14 +1023,14 @@
                     </div>
                 </div>
 
-                <!-- 採購預算區塊 (冷氣與汽車模式顯示，總計模式隱藏) -->
-                <div id="procurementSection" class="hidden mb-4 stats-card bg-[#fffbeb] border-[#fde68a] border-t-[4px] shadow-sm p-4 rounded-3xl relative overflow-hidden">
+                <!-- 採購預算區塊 (冷氣、汽車與總計模式皆共用) -->
+                <div id="procurementSection" class="mb-4 stats-card bg-[#fffbeb] border-[#fde68a] border-t-[4px] shadow-sm p-4 rounded-3xl relative overflow-hidden hidden">
                     <div class="absolute -right-4 -top-4 opacity-10 pointer-events-none"><i data-lucide="shopping-bag" class="w-24 h-24 text-amber-500"></i></div>
                     <div class="flex justify-between items-center mb-3 relative z-10">
                         <h3 id="procurementTitle" class="text-amber-800 text-[11px] font-bold uppercase tracking-widest flex items-center gap-1">
                             <i data-lucide="shopping-cart" class="w-3.5 h-3.5"></i> 採購預算與實際收入
                         </h3>
-                        <button onclick="toggleProcurementModal()" class="text-[10px] bg-amber-500 hover:bg-amber-600 transition-colors text-white px-2.5 py-1.5 rounded-lg shadow-sm font-bold active:scale-95">管理明細</button>
+                        <button id="manageProcBtn" onclick="toggleProcurementModal()" class="text-[10px] bg-amber-500 hover:bg-amber-600 transition-colors text-white px-2.5 py-1.5 rounded-lg shadow-sm font-bold active:scale-95">管理明細</button>
                     </div>
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-2 relative z-10">
                         <div class="bg-white/60 p-2 rounded-xl text-center border border-amber-200/50">
@@ -1286,6 +1286,8 @@
         let unsubAc = null;
         let unsubCar = null;
         let unsubProc = null;
+        let unsubProcAc = null;
+        let unsubProcCar = null;
         let dataAc = [];
         let dataCar = [];
         let dataProc = [];
@@ -1351,16 +1353,21 @@
             document.getElementById('acDetailWrap').classList.toggle('hidden', mode !== 'ac');
             document.getElementById('carDetailWrap').classList.toggle('hidden', mode !== 'car');
 
-            // 總計模式專屬版面控制：隱藏填寫按鈕、數量文字、篩選器、清單明細與採購區塊
+            // 總計模式專屬版面控制：隱藏填寫按鈕、數量文字、篩選器與清單明細
             const isSummary = mode === 'summary';
             document.querySelectorAll('.btn-icon').forEach(el => {
                 if(el.parentElement.innerText.includes('填寫')) el.parentElement.classList.toggle('hidden', isSummary);
             });
             if(isSummary) showPage('listPage');
             
-            // 採購區塊動態處理 (冷氣與汽車模式皆顯示，總計模式隱藏)
-            document.getElementById('procurementSection').classList.toggle('hidden', isSummary);
-            if (!isSummary) {
+            // 採購區塊動態處理 (三種模式皆顯示，但總計模式隱藏管理按鈕避免錯亂)
+            document.getElementById('procurementSection').classList.remove('hidden');
+            const manageBtn = document.getElementById('manageProcBtn');
+            if (manageBtn) manageBtn.classList.toggle('hidden', isSummary);
+            
+            if (isSummary) {
+                document.getElementById('procurementTitle').innerHTML = `<i data-lucide="shopping-cart" class="w-3.5 h-3.5"></i> 採購預算與實際收入 (雙系統合併)`;
+            } else {
                 document.getElementById('procurementTitle').innerHTML = `<i data-lucide="shopping-cart" class="w-3.5 h-3.5"></i> 採購預算與實際收入 (${mode === 'ac' ? '冷氣' : '汽車'}專屬)`;
             }
 
@@ -1425,6 +1432,8 @@
                 if (unsubAc) { unsubAc(); unsubAc = null; }
                 if (unsubCar) { unsubCar(); unsubCar = null; }
                 if (unsubProc) { unsubProc(); unsubProc = null; }
+                if (window.unsubProcAc) { window.unsubProcAc(); window.unsubProcAc = null; }
+                if (window.unsubProcCar) { window.unsubProcCar(); window.unsubProcCar = null; }
             }
             lucide.createIcons();
         });
@@ -1452,10 +1461,20 @@
             if (unsubAc) { unsubAc(); unsubAc = null; }
             if (unsubCar) { unsubCar(); unsubCar = null; }
             if (unsubProc) { unsubProc(); unsubProc = null; }
+            if (window.unsubProcAc) { window.unsubProcAc(); window.unsubProcAc = null; }
+            if (window.unsubProcCar) { window.unsubProcCar(); window.unsubProcCar = null; }
 
             const getCol = (type) => {
-                // 修改處：根據 currentAppMode 決定採購集合名稱
-                let baseName = type === 'car' ? 'carRecords' : (type === 'ac' ? 'cleaningRecords' : (currentAppMode === 'ac' ? 'acProcurementRecords' : 'carProcurementRecords'));
+                let baseName = type === 'car' ? 'carRecords' : 'cleaningRecords';
+                if (allowedEmails.includes((auth.currentUser?.email || '').toLowerCase())) {
+                    return collection(db, baseName);
+                } else {
+                    return collection(db, baseName + "_" + auth.currentUser.uid);
+                }
+            };
+            
+            const getProcCol = (type) => {
+                let baseName = type === 'ac' ? 'acProcurementRecords' : 'carProcurementRecords';
                 if (allowedEmails.includes((auth.currentUser?.email || '').toLowerCase())) {
                     return collection(db, baseName);
                 } else {
@@ -1477,9 +1496,21 @@
                     combineAndFilter();
                 });
             }
-            // 冷氣模式與汽車模式皆有採購紀錄
-            if (currentAppMode === 'car' || currentAppMode === 'ac') {
-                unsubProc = onSnapshot(getCol('proc'), snap => {
+            // 採購紀錄處理 (冷氣、汽車、總計模式共用或獨立抓取)
+            if (currentAppMode === 'summary') {
+                let tempAc = [], tempCar = [];
+                window.unsubProcAc = onSnapshot(getProcCol('ac'), snap => {
+                    tempAc = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                    dataProc = [...tempAc, ...tempCar];
+                    combineAndFilter();
+                });
+                window.unsubProcCar = onSnapshot(getProcCol('car'), snap => {
+                    tempCar = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                    dataProc = [...tempAc, ...tempCar];
+                    combineAndFilter();
+                });
+            } else {
+                unsubProc = onSnapshot(getProcCol(currentAppMode), snap => {
                     dataProc = snap.docs.map(d => ({ id: d.id, ...d.data() }));
                     combineAndFilter();
                 });
@@ -2173,25 +2204,23 @@
                 addPassSummary(fPassSummary, r);
             });
 
-            // ===== 採購預算計算與呈現 (冷氣與汽車共用) ======
-            if (currentAppMode === 'car' || currentAppMode === 'ac') {
-                let procTotal = 0;
-                dataProc.forEach(p => {
-                    procTotal += (parseInt(p.amount) || 0);
-                });
-                
-                const pctStr = document.getElementById('budgetPercent').value;
-                const pct = isNaN(parseInt(pctStr)) ? 0 : parseInt(pctStr);
-                
-                const budget = Math.floor(aRev * (pct / 100));
-                const remain = budget - procTotal;
-                const actualNet = (aRev - aExp) - procTotal;
+            // ===== 採購預算計算與呈現 (三模式共用) ======
+            let procTotal = 0;
+            dataProc.forEach(p => {
+                procTotal += (parseInt(p.amount) || 0);
+            });
+            
+            const pctStr = document.getElementById('budgetPercent').value;
+            const pct = isNaN(parseInt(pctStr)) ? 0 : parseInt(pctStr);
+            
+            const budget = Math.floor(aRev * (pct / 100));
+            const remain = budget - procTotal;
+            const actualNet = (aRev - aExp) - procTotal;
 
-                document.getElementById('procBudget').innerText = `$${budget.toLocaleString()}`;
-                document.getElementById('procSpent').innerText = `$${procTotal.toLocaleString()}`;
-                document.getElementById('procRemain').innerText = `$${remain.toLocaleString()}`;
-                document.getElementById('actualNet').innerText = `$${actualNet.toLocaleString()}`;
-            }
+            document.getElementById('procBudget').innerText = `$${budget.toLocaleString()}`;
+            document.getElementById('procSpent').innerText = `$${procTotal.toLocaleString()}`;
+            document.getElementById('procRemain').innerText = `$${remain.toLocaleString()}`;
+            document.getElementById('actualNet').innerText = `$${actualNet.toLocaleString()}`;
 
             const floatingWrap = document.getElementById('floatingUnpaidWrap');
             const floatingUnpaidBadgeCount = document.getElementById('unpaidCountBadge');
@@ -2318,10 +2347,10 @@
                         asDisplay = `小幫手：${parts.join('+')}`;
                     }
                 } else {
-                    const plateDisplay = i.licensePlate ? `(${i.licensePlate})` : '';
+                    const plateDisplay = i.licensePlate ? `<span class="ml-2 bg-white text-slate-800 font-mono px-2 py-0.5 rounded shadow-sm border border-slate-300 text-[0.65rem] tracking-widest inline-flex items-center gap-1"><span class="w-[3px] h-[3px] rounded-full bg-slate-300"></span>${i.licensePlate}<span class="w-[3px] h-[3px] rounded-full bg-slate-300"></span></span>` : '';
                     const brandDisplay = i.carBrand ? `${i.carBrand} ` : '';
                     const modelDisplay = i.carModel ? `${i.carModel} ` : '';
-                    services.push(`<div class="font-bold text-blue-700 pb-1 mb-1 border-b border-slate-100">${brandDisplay}${modelDisplay}${i.carType} ${plateDisplay}</div>`);
+                    services.push(`<div class="font-bold text-blue-700 pb-1 mb-1 border-b border-slate-100 flex items-center flex-wrap gap-y-1"><span>${brandDisplay}${modelDisplay}${i.carType}</span>${plateDisplay}</div>`);
                     
                     let svcItemsArr = [];
                     if(i.carServices) {
