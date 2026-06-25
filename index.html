@@ -1023,12 +1023,12 @@
                     </div>
                 </div>
 
-                <!-- 採購預算區塊 (僅限汽車模式顯示) -->
-                <div id="carProcurementSection" class="hidden mb-4 stats-card bg-[#fffbeb] border-[#fde68a] border-t-[4px] shadow-sm p-4 rounded-3xl relative overflow-hidden">
+                <!-- 採購預算區塊 (冷氣與汽車模式顯示，總計模式隱藏) -->
+                <div id="procurementSection" class="hidden mb-4 stats-card bg-[#fffbeb] border-[#fde68a] border-t-[4px] shadow-sm p-4 rounded-3xl relative overflow-hidden">
                     <div class="absolute -right-4 -top-4 opacity-10 pointer-events-none"><i data-lucide="shopping-bag" class="w-24 h-24 text-amber-500"></i></div>
                     <div class="flex justify-between items-center mb-3 relative z-10">
-                        <h3 class="text-amber-800 text-[11px] font-bold uppercase tracking-widest flex items-center gap-1">
-                            <i data-lucide="shopping-cart" class="w-3.5 h-3.5"></i> 採購預算與實際收入 (汽車專屬)
+                        <h3 id="procurementTitle" class="text-amber-800 text-[11px] font-bold uppercase tracking-widest flex items-center gap-1">
+                            <i data-lucide="shopping-cart" class="w-3.5 h-3.5"></i> 採購預算與實際收入
                         </h3>
                         <button onclick="toggleProcurementModal()" class="text-[10px] bg-amber-500 hover:bg-amber-600 transition-colors text-white px-2.5 py-1.5 rounded-lg shadow-sm font-bold active:scale-95">管理明細</button>
                     </div>
@@ -1350,15 +1350,20 @@
             document.getElementById('carBasicInfoWrap').classList.toggle('hidden', mode !== 'car');
             document.getElementById('acDetailWrap').classList.toggle('hidden', mode !== 'ac');
             document.getElementById('carDetailWrap').classList.toggle('hidden', mode !== 'car');
-            document.getElementById('carProcurementSection').classList.toggle('hidden', mode !== 'car');
 
-            // 總計模式專屬版面控制：隱藏填寫按鈕、數量文字、篩選器與清單明細
+            // 總計模式專屬版面控制：隱藏填寫按鈕、數量文字、篩選器、清單明細與採購區塊
             const isSummary = mode === 'summary';
             document.querySelectorAll('.btn-icon').forEach(el => {
                 if(el.parentElement.innerText.includes('填寫')) el.parentElement.classList.toggle('hidden', isSummary);
             });
             if(isSummary) showPage('listPage');
             
+            // 採購區塊動態處理 (冷氣與汽車模式皆顯示，總計模式隱藏)
+            document.getElementById('procurementSection').classList.toggle('hidden', isSummary);
+            if (!isSummary) {
+                document.getElementById('procurementTitle').innerHTML = `<i data-lucide="shopping-cart" class="w-3.5 h-3.5"></i> 採購預算與實際收入 (${mode === 'ac' ? '冷氣' : '汽車'}專屬)`;
+            }
+
             document.getElementById('allCountsGrid').classList.toggle('hidden', isSummary);
             document.getElementById('yCountsGroup').classList.toggle('hidden', isSummary);
             document.getElementById('mCountsGroup').classList.toggle('hidden', isSummary);
@@ -1449,7 +1454,8 @@
             if (unsubProc) { unsubProc(); unsubProc = null; }
 
             const getCol = (type) => {
-                let baseName = type === 'car' ? 'carRecords' : (type === 'ac' ? 'cleaningRecords' : 'carProcurementRecords');
+                // 修改處：根據 currentAppMode 決定採購集合名稱
+                let baseName = type === 'car' ? 'carRecords' : (type === 'ac' ? 'cleaningRecords' : (currentAppMode === 'ac' ? 'acProcurementRecords' : 'carProcurementRecords'));
                 if (allowedEmails.includes((auth.currentUser?.email || '').toLowerCase())) {
                     return collection(db, baseName);
                 } else {
@@ -1471,8 +1477,8 @@
                     combineAndFilter();
                 });
             }
-            // 汽車模式專屬：採購紀錄
-            if (currentAppMode === 'car') {
+            // 冷氣模式與汽車模式皆有採購紀錄
+            if (currentAppMode === 'car' || currentAppMode === 'ac') {
                 unsubProc = onSnapshot(getCol('proc'), snap => {
                     dataProc = snap.docs.map(d => ({ id: d.id, ...d.data() }));
                     combineAndFilter();
@@ -1535,7 +1541,7 @@
             showPage('formPage');
         };
 
-        // ====== 汽車採購預算管理專屬邏輯 ======
+        // ====== 採購預算管理專屬邏輯 (冷氣與汽車共用) ======
         window.toggleProcurementModal = () => {
             const modal = document.getElementById('procurementModal');
             const overlay = document.getElementById('procurementOverlay');
@@ -1568,7 +1574,7 @@
                 createdAt: new Date().toISOString()
             };
             try {
-                let baseName = 'carProcurementRecords';
+                let baseName = currentAppMode === 'ac' ? 'acProcurementRecords' : 'carProcurementRecords';
                 if (!allowedEmails.includes((auth.currentUser?.email || '').toLowerCase())) {
                     baseName += "_" + auth.currentUser.uid;
                 }
@@ -1576,7 +1582,7 @@
                 document.getElementById('procForm').reset();
                 document.getElementById('procDate').value = formatLocalDate(new Date());
             } catch (err) { 
-                alert('新增失敗：' + err.message + '\n\n(提示：若是權限錯誤，請至 Firebase Console 新增 carProcurementRecords 集合的安全性規則)'); 
+                alert('新增失敗：' + err.message + '\n\n(提示：若是權限錯誤，請至 Firebase Console 新增對應集合的安全性規則)'); 
                 console.error('Procurement Add Error:', err); 
             }
         };
@@ -1584,7 +1590,7 @@
         window.deleteProcurement = async (id) => {
             if(!confirm('確定要刪除此採購明細？')) return;
             try {
-                let baseName = 'carProcurementRecords';
+                let baseName = currentAppMode === 'ac' ? 'acProcurementRecords' : 'carProcurementRecords';
                 if (!allowedEmails.includes((auth.currentUser?.email || '').toLowerCase())) {
                     baseName += "_" + auth.currentUser.uid;
                 }
@@ -2167,14 +2173,13 @@
                 addPassSummary(fPassSummary, r);
             });
 
-            // ===== 汽車採購預算計算與呈現 ======
-            if (currentAppMode === 'car') {
+            // ===== 採購預算計算與呈現 (冷氣與汽車共用) ======
+            if (currentAppMode === 'car' || currentAppMode === 'ac') {
                 let procTotal = 0;
                 dataProc.forEach(p => {
                     procTotal += (parseInt(p.amount) || 0);
                 });
                 
-                // 本次修改：取得輸入框的百分比，防呆處理如果清空或輸入錯誤則視為 0
                 const pctStr = document.getElementById('budgetPercent').value;
                 const pct = isNaN(parseInt(pctStr)) ? 0 : parseInt(pctStr);
                 
@@ -2298,33 +2303,45 @@
             const list = document.getElementById('recordList');
             list.innerHTML = data.map(i => {
                 let services = [];
+                let asDisplay = "";
                 
+                // 區分冷氣模式與汽車模式的排版邏輯
                 if (i._type === 'ac' || (!i._type && currentAppMode === 'ac')) {
                     const acTitle = `冷氣${i.acCount}台`;
                     if(i.acCount > 0) services.push(i.acBrand ? `${acTitle}：${i.acBrand}` : acTitle);
                     if(i.wmCount > 0) services.push(`洗衣機${i.wmCount}台`);
                     if(i.wtCount > 0) services.push(`水塔${i.wtCount}口`);
+                    
+                    // 冷氣模式：維持原本的小幫手下方文字顯示
+                    if (i.assistantDetail) {
+                        const parts = i.assistantDetail.split(',').map(s => { const [n, a] = s.split(':'); return `${n}${a}元`; });
+                        asDisplay = `小幫手：${parts.join('+')}`;
+                    }
                 } else {
                     const plateDisplay = i.licensePlate ? `(${i.licensePlate})` : '';
                     const brandDisplay = i.carBrand ? `${i.carBrand} ` : '';
                     const modelDisplay = i.carModel ? `${i.carModel} ` : '';
                     services.push(`<div class="font-bold text-blue-700 pb-1 mb-1 border-b border-slate-100">${brandDisplay}${modelDisplay}${i.carType} ${plateDisplay}</div>`);
                     
+                    let svcItemsArr = [];
                     if(i.carServices) {
-                        const svcItems = i.carServices.split('+').map(svc => {
+                        i.carServices.split('+').forEach(svc => {
                             const parts = svc.split('*');
                             const name = parts[0];
                             const price = parts[1] || '';
-                            return `<div class="flex justify-between items-center text-[0.85rem] border-b border-slate-100 border-dashed py-1.5 last:border-0"><span class="text-slate-600">${name}</span><span class="text-slate-700 font-bold">${price}</span></div>`;
-                        }).join('');
-                        services.push(`<div>${svcItems}</div>`);
+                            svcItemsArr.push(`<div class="flex justify-between items-center text-[0.85rem] border-b border-slate-100 border-dashed py-1.5 last:border-0"><span class="text-slate-600">${name}</span><span class="text-slate-700 font-bold">${price}</span></div>`);
+                        });
                     }
-                }
-
-                let asDisplay = "";
-                if (i.assistantDetail) {
-                    const parts = i.assistantDetail.split(',').map(s => { const [n, a] = s.split(':'); return `${n}${a}元`; });
-                    asDisplay = `小幫手：${parts.join('+')}`;
+                    // 本次修改：汽車模式將小幫手匯入如服務項目的左右排版
+                    if(i.assistantDetail) {
+                        i.assistantDetail.split(',').forEach(s => {
+                            const [n, a] = s.split(':');
+                            svcItemsArr.push(`<div class="flex justify-between items-center text-[0.85rem] border-b border-slate-100 border-dashed py-1.5 last:border-0"><span class="text-rose-500">小幫手：${n}</span><span class="text-rose-600 font-bold">-${a}元</span></div>`);
+                        });
+                    }
+                    if(svcItemsArr.length > 0) {
+                        services.push(`<div>${svcItemsArr.join('')}</div>`);
+                    }
                 }
 
                 let isComp = i.status === 'completed';
