@@ -816,7 +816,7 @@
                 <img src="https://www.gstatic.com/images/branding/googleg/1x/googleg_standard_color_128dp.png" class="w-5 h-5">
                 Google 帳號登入
             </button>
-            <p id="authError" class="text-rose-500 text-xs font-bold hidden whitespace-pre-wrap"></p>
+            <p id="authError" class="text-rose-500 text-sm font-bold hidden whitespace-pre-wrap"></p>
         </div>
     </section>
 
@@ -1495,11 +1495,21 @@
         window.handleLogin = async () => {
             const errorEl = document.getElementById('authError');
             errorEl.classList.add('hidden');
+
+            // 【本次新增】LINE 等內建瀏覽器環境防呆偵測
+            const ua = navigator.userAgent || navigator.vendor || window.opera;
+            if (ua.indexOf("Line") > -1 || ua.indexOf("FBAV") > -1 || ua.indexOf("Instagram") > -1) {
+                errorEl.innerText = "⚠️ 偵測到內建瀏覽器！\n\nLINE/FB 會阻擋 Google 登入驗證。請點擊畫面右上角或右下角的選單 (⠇或 ⋯)，選擇「以預設瀏覽器開啟」(Safari 或 Chrome) 後再重新登入。";
+                errorEl.classList.remove('hidden');
+                return; // 直接中斷，避免彈出失敗的登入視窗
+            }
+
             try {
                 await signInWithPopup(auth, provider);
             } catch (error) {
                 console.error("Login failed", error);
-                errorEl.innerText = `⚠️ 登入失敗！\n錯誤代碼: ${error.code}\n請檢查 Firebase Console 是否啟動 Google 登入並加入授權網域。`;
+                // 增強錯誤提示
+                errorEl.innerText = `⚠️ 登入失敗！\n錯誤代碼: ${error.code}\n\n若您正在使用 App 內建瀏覽器，請改用 Safari / Chrome 開啟此網頁。`;
                 errorEl.classList.remove('hidden');
             }
         };
